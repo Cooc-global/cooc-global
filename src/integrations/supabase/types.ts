@@ -14,13 +14,215 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      daily_returns: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          investment_id: string
+          return_date: string
+          user_id: string
+          withdrawn: boolean
+          withdrawn_at: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          investment_id: string
+          return_date: string
+          user_id: string
+          withdrawn?: boolean
+          withdrawn_at?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          investment_id?: string
+          return_date?: string
+          user_id?: string
+          withdrawn?: boolean
+          withdrawn_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_returns_investment_id_fkey"
+            columns: ["investment_id"]
+            isOneToOne: false
+            referencedRelation: "investments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exchange_rates: {
+        Row: {
+          active: boolean
+          created_at: string
+          currency_pair: string
+          id: string
+          rate: number
+          set_by: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          currency_pair: string
+          id?: string
+          rate: number
+          set_by: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          currency_pair?: string
+          id?: string
+          rate?: number
+          set_by?: string
+        }
+        Relationships: []
+      }
+      investments: {
+        Row: {
+          amount: number
+          created_at: string
+          daily_return: number
+          end_date: string
+          id: string
+          start_date: string
+          status: string
+          total_withdrawn: number
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          daily_return: number
+          end_date: string
+          id?: string
+          start_date?: string
+          status?: string
+          total_withdrawn?: number
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          daily_return?: number
+          end_date?: string
+          id?: string
+          start_date?: string
+          status?: string
+          total_withdrawn?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          role: string
+          updated_at: string
+          user_id: string
+          wallet_address: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          role?: string
+          updated_at?: string
+          user_id: string
+          wallet_address: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          role?: string
+          updated_at?: string
+          user_id?: string
+          wallet_address?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          from_address: string | null
+          id: string
+          status: string
+          to_address: string | null
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          from_address?: string | null
+          id?: string
+          status?: string
+          to_address?: string | null
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          from_address?: string | null
+          id?: string
+          status?: string
+          to_address?: string | null
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      wallets: {
+        Row: {
+          balance: number
+          created_at: string
+          id: string
+          locked_balance: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          id?: string
+          locked_balance?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          id?: string
+          locked_balance?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_daily_returns: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
