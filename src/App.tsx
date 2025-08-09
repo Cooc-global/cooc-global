@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
+import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,9 +40,10 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route 
-              path="/" 
+              path="/dashboard" 
               element={
                 <ProtectedRoute>
                   <Dashboard />
