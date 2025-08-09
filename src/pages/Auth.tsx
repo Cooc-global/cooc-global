@@ -67,9 +67,13 @@ const Auth = () => {
       });
 
       if (error) {
+        let description = error.message;
+        if (error.message.includes('Email not confirmed')) {
+          description = "Please check your email and click the confirmation link before signing in. If you haven't received it, try signing up again.";
+        }
         toast({
           title: "Error",
-          description: error.message,
+          description,
           variant: "destructive",
         });
       } else {
