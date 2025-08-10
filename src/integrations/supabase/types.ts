@@ -223,6 +223,14 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      get_developer_user_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      process_transfer_with_fee: {
+        Args: { sender_id: string; recipient_address: string; amount: number }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
