@@ -88,17 +88,30 @@ const WalletSection = ({ wallet, profile, onWalletUpdate }: WalletSectionProps) 
 
     setLoading(true);
     try {
-      // Update sender's balance
-      const { error: walletError } = await supabase
-        .from('wallets')
-        .update({
-          balance: (wallet?.balance || 0) - amount
-        })
-        .eq('user_id', user?.id);
+      // Use the database function to process transfer with fee
+      const { data: result, error } = await supabase.rpc('process_transfer_with_fee', {
+        sender_id: user?.id,
+        recipient_address: transferAddress,
+        amount: amount
+      });
 
-      if (walletError) throw walletError;
+      if (error) throw error;
+      
+      const resultData = result as any;
+      
+      if (!resultData.success) {
+        toast({
+          title: "Error",
+          description: resultData.error,
+          variant: "destructive",
+        });
+        return;
+      }
 
-      // Record outgoing transaction
+      const feeAmount = resultData.fee_amount;
+      const netAmount = resultData.net_amount;
+
+      // Record outgoing transaction for sender
       const { error: transactionError } = await supabase
         .from('transactions')
         .insert({
@@ -107,14 +120,14 @@ const WalletSection = ({ wallet, profile, onWalletUpdate }: WalletSectionProps) 
           amount: amount,
           from_address: profile?.wallet_address,
           to_address: transferAddress,
-          description: `Transferred ${amount} CLC to ${transferAddress}`
+          description: `Transferred ${amount} CLC (fee: ${feeAmount} CLC, net: ${netAmount} CLC)`
         });
 
       if (transactionError) throw transactionError;
 
       toast({
         title: "Success",
-        description: `Successfully transferred ${amount} CLC`,
+        description: `Successfully transferred ${amount} CLC (10% fee: ${feeAmount} CLC applied)`,
       });
 
       setTransferAmount('');
@@ -179,7 +192,7 @@ const WalletSection = ({ wallet, profile, onWalletUpdate }: WalletSectionProps) 
             Transfer CLC
           </CardTitle>
           <CardDescription>
-            Send CLC to another wallet
+            Send CLC to another wallet (10% transaction fee applies)
           </CardDescription>
         </CardHeader>
         <CardContent>

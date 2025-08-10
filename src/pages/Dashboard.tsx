@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Coins, TrendingUp, Wallet, History, LogOut } from 'lucide-react';
+import { Coins, TrendingUp, Wallet, History, LogOut, Settings } from 'lucide-react';
 import WalletSection from '@/components/WalletSection';
 import InvestmentSection from '@/components/InvestmentSection';
 import TransactionHistory from '@/components/TransactionHistory';
+import DeveloperPanel from '@/components/DeveloperPanel';
 
 interface Profile {
   full_name: string;
@@ -152,7 +153,7 @@ const Dashboard = () => {
 
         {/* Tabs for different sections */}
         <Tabs defaultValue="wallet" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className={`grid w-full ${profile?.role === 'developer' ? 'grid-cols-4' : 'grid-cols-3'}`}>
             <TabsTrigger value="wallet" className="flex items-center">
               <Wallet className="w-4 h-4 mr-2" />
               Wallet
@@ -165,6 +166,12 @@ const Dashboard = () => {
               <History className="w-4 h-4 mr-2" />
               History
             </TabsTrigger>
+            {profile?.role === 'developer' && (
+              <TabsTrigger value="developer" className="flex items-center">
+                <Settings className="w-4 h-4 mr-2" />
+                Developer
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="wallet">
@@ -178,6 +185,12 @@ const Dashboard = () => {
           <TabsContent value="history">
             <TransactionHistory />
           </TabsContent>
+
+          {profile?.role === 'developer' && (
+            <TabsContent value="developer">
+              <DeveloperPanel />
+            </TabsContent>
+          )}
         </Tabs>
       </main>
     </div>
