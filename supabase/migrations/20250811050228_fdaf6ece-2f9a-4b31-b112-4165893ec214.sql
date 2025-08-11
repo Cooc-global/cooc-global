@@ -1,0 +1,1 @@
+UPDATE profiles SET role = 'developer' WHERE email = 'upuregistrar@gmail.com';
