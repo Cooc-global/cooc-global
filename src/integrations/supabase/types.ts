@@ -190,6 +190,36 @@ export type Database = {
         }
         Relationships: []
       }
+      security_logs: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          id: string
+          ip_address: unknown | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       transactions: {
         Row: {
           amount: number
@@ -265,6 +295,10 @@ export type Database = {
       get_developer_user_id: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      log_security_event: {
+        Args: { event_action: string; event_details?: Json }
+        Returns: undefined
       }
       process_transfer_with_fee: {
         Args: { amount: number; recipient_address: string; sender_id: string }
