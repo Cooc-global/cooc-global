@@ -248,8 +248,13 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
                   placeholder="+254 XXX XXX XXX"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
+                  pattern="[+]?[0-9\s\-\(\)]{10,15}"
+                  title="Enter a valid phone number (10-15 digits, may include +, spaces, dashes, parentheses)"
                   required
                 />
+                <p className="text-xs text-muted-foreground">
+                  Format: +254XXXXXXXXX or 0XXXXXXXXX
+                </p>
               </div>
 
               <div className="space-y-2">
