@@ -59,15 +59,55 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
     }
   };
 
+  // Input validation helper
+  const validatePhoneNumber = (phone: string): boolean => {
+    const phoneRegex = /^[+]?[0-9\s\-\(\)]{10,15}$/;
+    return phoneRegex.test(phone);
+  };
+
+  const validateAmount = (amount: string): boolean => {
+    const num = parseFloat(amount);
+    return !isNaN(num) && num > 0 && num <= (wallet?.balance || 0);
+  };
+
   const handleCreateOffer = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!coinsToSell || !phoneNumber || parseFloat(coinsToSell) <= 0) return;
-
-    const coinsAmount = parseFloat(coinsToSell);
-    if (coinsAmount > (wallet?.balance || 0)) {
+    
+    // Enhanced validation
+    if (!coinsToSell || !phoneNumber || !pricePerCoin) {
       toast({
         title: "Error",
-        description: "You cannot sell more coins than you have",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!validatePhoneNumber(phoneNumber)) {
+      toast({
+        title: "Error",
+        description: "Please enter a valid phone number (10-15 digits)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!validateAmount(coinsToSell)) {
+      toast({
+        title: "Error",
+        description: "Invalid coin amount or insufficient balance",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const coinsAmount = parseFloat(coinsToSell);
+    const priceAmount = parseFloat(pricePerCoin);
+    
+    if (priceAmount <= 0) {
+      toast({
+        title: "Error",
+        description: "Price per coin must be greater than 0",
         variant: "destructive",
       });
       return;
