@@ -163,6 +163,8 @@ export type Database = {
           email: string
           full_name: string
           id: string
+          referral_code: string | null
+          referred_by: string | null
           role: string
           updated_at: string
           user_id: string
@@ -173,6 +175,8 @@ export type Database = {
           email: string
           full_name: string
           id?: string
+          referral_code?: string | null
+          referred_by?: string | null
           role?: string
           updated_at?: string
           user_id: string
@@ -183,6 +187,8 @@ export type Database = {
           email?: string
           full_name?: string
           id?: string
+          referral_code?: string | null
+          referred_by?: string | null
           role?: string
           updated_at?: string
           user_id?: string

@@ -5,16 +5,19 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Coins, TrendingUp, Wallet, History, LogOut, Settings } from 'lucide-react';
+import { Coins, TrendingUp, Wallet, History, LogOut, Settings, Users } from 'lucide-react';
 import WalletSection from '@/components/WalletSection';
 import InvestmentSection from '@/components/InvestmentSection';
 import TransactionHistory from '@/components/TransactionHistory';
 import DeveloperPanel from '@/components/DeveloperPanel';
+import ReferralSection from '@/components/ReferralSection';
 
 interface Profile {
   full_name: string;
   wallet_address: string;
   role: string;
+  referral_code: string;
+  referred_by: string | null;
 }
 
 interface WalletData {
@@ -153,7 +156,7 @@ const Dashboard = () => {
 
         {/* Tabs for different sections */}
         <Tabs defaultValue="wallet" className="space-y-6">
-          <TabsList className={`grid w-full ${profile?.role === 'developer' ? 'grid-cols-4' : 'grid-cols-3'}`}>
+          <TabsList className={`grid w-full ${profile?.role === 'developer' ? 'grid-cols-5' : 'grid-cols-4'}`}>
             <TabsTrigger value="wallet" className="flex items-center">
               <Wallet className="w-4 h-4 mr-2" />
               Wallet
@@ -161,6 +164,10 @@ const Dashboard = () => {
             <TabsTrigger value="invest" className="flex items-center">
               <TrendingUp className="w-4 h-4 mr-2" />
               Invest
+            </TabsTrigger>
+            <TabsTrigger value="referrals" className="flex items-center">
+              <Users className="w-4 h-4 mr-2" />
+              Referrals
             </TabsTrigger>
             <TabsTrigger value="history" className="flex items-center">
               <History className="w-4 h-4 mr-2" />
@@ -180,6 +187,10 @@ const Dashboard = () => {
 
           <TabsContent value="invest">
             <InvestmentSection wallet={wallet} onInvestmentUpdate={fetchUserData} />
+          </TabsContent>
+
+          <TabsContent value="referrals">
+            <ReferralSection />
           </TabsContent>
 
           <TabsContent value="history">
