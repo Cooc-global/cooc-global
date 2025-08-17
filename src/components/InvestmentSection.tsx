@@ -35,13 +35,11 @@ const InvestmentSection = ({ wallet, onInvestmentUpdate }: InvestmentSectionProp
   const { toast } = useToast();
   const [investmentAmount, setInvestmentAmount] = useState('');
   const [investments, setInvestments] = useState<Investment[]>([]);
-  const [dailyReturns, setDailyReturns] = useState<DailyReturn[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (user) {
       fetchInvestments();
-      fetchDailyReturns();
     }
   }, [user]);
 
@@ -60,21 +58,6 @@ const InvestmentSection = ({ wallet, onInvestmentUpdate }: InvestmentSectionProp
     }
   };
 
-  const fetchDailyReturns = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('daily_returns')
-        .select('*')
-        .eq('user_id', user?.id)
-        .eq('withdrawn', false)
-        .order('return_date', { ascending: false });
-
-      if (error) throw error;
-      setDailyReturns(data || []);
-    } catch (error) {
-      console.error('Error fetching daily returns:', error);
-    }
-  };
 
   const handleInvest = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -154,60 +137,6 @@ const InvestmentSection = ({ wallet, onInvestmentUpdate }: InvestmentSectionProp
     }
   };
 
-  const handleWithdrawReturn = async (returnId: string, amount: number) => {
-    try {
-      // Mark daily return as withdrawn
-      const { error: returnError } = await supabase
-        .from('daily_returns')
-        .update({
-          withdrawn: true,
-          withdrawn_at: new Date().toISOString()
-        })
-        .eq('id', returnId);
-
-      if (returnError) throw returnError;
-
-      // Update wallet balance
-      const { error: walletError } = await supabase
-        .from('wallets')
-        .update({
-          balance: (wallet?.balance || 0) + amount
-        })
-        .eq('user_id', user?.id);
-
-      if (walletError) throw walletError;
-
-      // Record withdrawal transaction
-      const { error: transactionError } = await supabase
-        .from('transactions')
-        .insert({
-          user_id: user?.id,
-          transaction_type: 'withdrawal',
-          amount: amount,
-          description: `Withdrew daily return of ${amount} CLC`
-        });
-
-      if (transactionError) throw transactionError;
-
-      toast({
-        title: "Success",
-        description: `Successfully withdrew ${amount} CLC`,
-      });
-
-      fetchDailyReturns();
-      onInvestmentUpdate();
-    } catch (error) {
-      console.error('Error withdrawing return:', error);
-      toast({
-        title: "Error",
-        description: "Failed to withdraw return",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const totalPendingReturns = dailyReturns.reduce((sum, ret) => sum + ret.amount, 0);
-
   return (
     <div className="space-y-6">
       {/* Investment Form */}
@@ -218,7 +147,7 @@ const InvestmentSection = ({ wallet, onInvestmentUpdate }: InvestmentSectionProp
             Create Investment
           </CardTitle>
           <CardDescription>
-            Invest your CLC for 90 days and earn 5% daily returns
+            Invest your CLC for 90 days and earn 5% daily returns (automatically added to your wallet)
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -264,40 +193,6 @@ const InvestmentSection = ({ wallet, onInvestmentUpdate }: InvestmentSectionProp
         </CardContent>
       </Card>
 
-      {/* Pending Returns */}
-      {dailyReturns.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <DollarSign className="w-5 h-5 mr-2" />
-              Pending Returns
-            </CardTitle>
-            <CardDescription>
-              Daily returns available for withdrawal (Total: {totalPendingReturns.toFixed(2)} CLC)
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {dailyReturns.map((dailyReturn) => (
-                <div key={dailyReturn.id} className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                  <div>
-                    <p className="font-medium">{dailyReturn.amount.toFixed(2)} CLC</p>
-                    <p className="text-sm text-muted-foreground">
-                      {new Date(dailyReturn.return_date).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <Button 
-                    size="sm" 
-                    onClick={() => handleWithdrawReturn(dailyReturn.id, dailyReturn.amount)}
-                  >
-                    Withdraw
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Active Investments */}
       {investments.length > 0 && (
