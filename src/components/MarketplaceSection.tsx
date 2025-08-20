@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+// Textarea import removed as description field is no longer needed
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -15,7 +15,6 @@ interface MarketplaceOffer {
   phone_number: string;
   coins_for_sale: number;
   price_per_coin: number;
-  description: string;
   created_at: string;
   user_id: string;
 }
@@ -36,7 +35,6 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
   const [coinsToSell, setCoinsToSell] = useState('');
   const [pricePerCoin, setPricePerCoin] = useState('1.00');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [description, setDescription] = useState('');
 
   useEffect(() => {
     fetchOffers(); // Fetch offers regardless of authentication status
@@ -135,8 +133,7 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
           seller_name: profile?.full_name || 'Anonymous',
           phone_number: phoneNumber,
           coins_for_sale: coinsAmount,
-          price_per_coin: parseFloat(pricePerCoin),
-          description: description || null
+          price_per_coin: parseFloat(pricePerCoin)
         });
 
       if (error) throw error;
@@ -150,7 +147,6 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
       setCoinsToSell('');
       setPricePerCoin('1.00');
       setPhoneNumber('');
-      setDescription('');
       setShowForm(false);
       
       fetchOffers();
@@ -270,16 +266,6 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
                 </p>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="description">Description (Optional)</Label>
-                <Textarea
-                  id="description"
-                  placeholder="Any additional details about your offer..."
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  rows={3}
-                />
-              </div>
 
               <div className="text-sm text-muted-foreground">
                 Total Value: {coinsToSell && pricePerCoin ? 
@@ -354,15 +340,6 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
                     </div>
                   </div>
 
-                  {offer.description && (
-                    <div className="text-sm text-muted-foreground">
-                      {offer.description}
-                    </div>
-                  )}
-
-                  <div className="text-xs text-muted-foreground">
-                    Posted: {new Date(offer.created_at).toLocaleDateString()}
-                  </div>
                 </div>
               ))}
             </div>
