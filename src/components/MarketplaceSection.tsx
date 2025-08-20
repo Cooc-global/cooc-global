@@ -39,21 +39,34 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
   const [description, setDescription] = useState('');
 
   useEffect(() => {
-    if (user) {
-      fetchOffers();
-    }
+    fetchOffers(); // Fetch offers regardless of authentication status
   }, [user]);
 
   const fetchOffers = async () => {
     try {
-      const { data, error } = await supabase
-        .from('marketplace')
-        .select('*')
-        .eq('status', 'active')
-        .order('created_at', { ascending: false });
+      // If user is authenticated, get full data including phone numbers
+      if (user) {
+        const { data, error } = await supabase
+          .from('marketplace')
+          .select('*')
+          .eq('status', 'active')
+          .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setOffers(data || []);
+        if (error) throw error;
+        setOffers(data || []);
+      } else {
+        // For anonymous users, use the security function that excludes phone numbers
+        const { data, error } = await supabase
+          .rpc('get_marketplace_offers_public');
+
+        if (error) throw error;
+        // Add empty phone_number field for anonymous users to maintain component structure
+        const offersWithoutPhone = (data || []).map(offer => ({
+          ...offer,
+          phone_number: '' // Hidden for anonymous users
+        }));
+        setOffers(offersWithoutPhone);
+      }
     } catch (error) {
       console.error('Error fetching marketplace offers:', error);
     }
@@ -302,10 +315,17 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
                   <div className="flex justify-between items-start">
                     <div className="space-y-2">
                       <div className="font-semibold">{offer.seller_name}</div>
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <Phone className="w-4 h-4 mr-1" />
-                        {offer.phone_number}
-                      </div>
+                      {user && offer.phone_number && (
+                        <div className="flex items-center text-sm text-muted-foreground">
+                          <Phone className="w-4 h-4 mr-1" />
+                          {offer.phone_number}
+                        </div>
+                      )}
+                      {!user && (
+                        <div className="text-sm text-muted-foreground">
+                          Sign in to view contact details
+                        </div>
+                      )}
                     </div>
                     {offer.user_id === user?.id && (
                       <Button

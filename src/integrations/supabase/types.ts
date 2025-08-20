@@ -302,6 +302,20 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_marketplace_offers_public: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          coins_for_sale: number
+          created_at: string
+          description: string
+          id: string
+          price_per_coin: number
+          seller_name: string
+          status: string
+          updated_at: string
+          user_id: string
+        }[]
+      }
       log_security_event: {
         Args: { event_action: string; event_details?: Json }
         Returns: undefined
