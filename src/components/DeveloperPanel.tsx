@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Settings, Wallet, TrendingUp, Users, DollarSign, UserPlus, UserX, Ban, CheckCircle, Trash2 } from 'lucide-react';
+import { Settings, Wallet, TrendingUp, Users, DollarSign, UserPlus, UserX, Ban, CheckCircle, Trash2, TrendingDown } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -30,6 +30,15 @@ interface UserProfile {
   balance: number;
 }
 
+interface ExchangeRate {
+  id: string;
+  currency_pair: string;
+  rate: number;
+  active: boolean;
+  set_by: string;
+  created_at: string;
+}
+
 const DeveloperPanel = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -51,9 +60,16 @@ const DeveloperPanel = () => {
   const [newUserPassword, setNewUserPassword] = useState('');
   const [newUserBalance, setNewUserBalance] = useState('0');
 
+  // Exchange rates state
+  const [exchangeRates, setExchangeRates] = useState<ExchangeRate[]>([]);
+  const [ratesLoading, setRatesLoading] = useState(false);
+  const [newCurrencyPair, setNewCurrencyPair] = useState('CLC/KSH');
+  const [newRate, setNewRate] = useState('1.00');
+
   useEffect(() => {
     fetchDeveloperStats();
     fetchAllUsers();
+    fetchExchangeRates();
   }, []);
 
   const fetchAllUsers = async () => {
@@ -315,6 +331,94 @@ const DeveloperPanel = () => {
     }
   };
 
+  const fetchExchangeRates = async () => {
+    setRatesLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('exchange_rates')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      setExchangeRates(data || []);
+    } catch (error) {
+      console.error('Error fetching exchange rates:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load exchange rates",
+        variant: "destructive",
+      });
+    } finally {
+      setRatesLoading(false);
+    }
+  };
+
+  const handleCreateRate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCurrencyPair || !newRate || parseFloat(newRate) <= 0) return;
+
+    try {
+      // Deactivate existing rate for this currency pair
+      await supabase
+        .from('exchange_rates')
+        .update({ active: false })
+        .eq('currency_pair', newCurrencyPair);
+
+      // Create new rate
+      const { error } = await supabase
+        .from('exchange_rates')
+        .insert({
+          currency_pair: newCurrencyPair,
+          rate: parseFloat(newRate),
+          set_by: user?.id,
+          active: true
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `Exchange rate for ${newCurrencyPair} set to ${newRate}`,
+      });
+
+      setNewRate('1.00');
+      fetchExchangeRates();
+    } catch (error) {
+      console.error('Error creating exchange rate:', error);
+      toast({
+        title: "Error",
+        description: "Failed to set exchange rate",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleToggleRate = async (rateId: string, currentActive: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('exchange_rates')
+        .update({ active: !currentActive })
+        .eq('id', rateId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `Exchange rate ${currentActive ? 'deactivated' : 'activated'}`,
+      });
+
+      fetchExchangeRates();
+    } catch (error) {
+      console.error('Error toggling exchange rate:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update exchange rate",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -332,9 +436,10 @@ const DeveloperPanel = () => {
       </div>
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="users">User Management</TabsTrigger>
+          <TabsTrigger value="rates">Exchange Rates</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -618,6 +723,138 @@ const DeveloperPanel = () => {
                                 </DialogContent>
                               </Dialog>
                             </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="rates" className="space-y-6">
+          {/* Set Exchange Rate Form */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingDown className="w-5 h-5" />
+                Set CLC Exchange Rate
+              </CardTitle>
+              <CardDescription>
+                Control the price of CLC tokens in the marketplace
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleCreateRate} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="currencyPair">Currency Pair</Label>
+                    <Input
+                      id="currencyPair"
+                      type="text"
+                      placeholder="CLC/KSH"
+                      value={newCurrencyPair}
+                      onChange={(e) => setNewCurrencyPair(e.target.value)}
+                      required
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Format: CLC/KSH, CLC/USD, etc.
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="exchangeRate">Exchange Rate</Label>
+                    <Input
+                      id="exchangeRate"
+                      type="number"
+                      placeholder="1.00"
+                      value={newRate}
+                      onChange={(e) => setNewRate(e.target.value)}
+                      min="0.01"
+                      step="0.01"
+                      required
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Price per 1 CLC token
+                    </p>
+                  </div>
+                </div>
+                <Button type="submit" className="w-full" variant="premium">
+                  <TrendingDown className="w-4 h-4 mr-2" />
+                  Set Exchange Rate
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+
+          {/* Current Exchange Rates */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <DollarSign className="w-5 h-5" />
+                Current Exchange Rates ({exchangeRates.length})
+              </CardTitle>
+              <CardDescription>
+                Manage all exchange rates for CLC tokens
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {ratesLoading ? (
+                <div className="flex items-center justify-center p-8">
+                  <Settings className="w-8 h-8 animate-spin text-primary" />
+                </div>
+              ) : exchangeRates.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No exchange rates set yet
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Currency Pair</TableHead>
+                        <TableHead>Rate</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Last Updated</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {exchangeRates.map((rate) => (
+                        <TableRow key={rate.id}>
+                          <TableCell className="font-medium">
+                            {rate.currency_pair}
+                          </TableCell>
+                          <TableCell className="font-semibold text-crypto">
+                            {rate.rate.toFixed(4)}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={rate.active ? 'default' : 'secondary'}>
+                              {rate.active ? 'Active' : 'Inactive'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {new Date(rate.created_at).toLocaleString()}
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              size="sm"
+                              variant={rate.active ? "outline" : "default"}
+                              onClick={() => handleToggleRate(rate.id, rate.active)}
+                            >
+                              {rate.active ? (
+                                <>
+                                  <Ban className="w-3 h-3 mr-1" />
+                                  Deactivate
+                                </>
+                              ) : (
+                                <>
+                                  <CheckCircle className="w-3 h-3 mr-1" />
+                                  Activate
+                                </>
+                              )}
+                            </Button>
                           </TableCell>
                         </TableRow>
                       ))}
