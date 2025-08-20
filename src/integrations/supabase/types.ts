@@ -298,6 +298,19 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      create_new_user: {
+        Args: {
+          full_name?: string
+          initial_balance?: number
+          user_email: string
+          user_password: string
+        }
+        Returns: string
+      }
+      delete_user_completely: {
+        Args: { target_user_id: string }
+        Returns: boolean
+      }
       get_developer_user_id: {
         Args: Record<PropertyKey, never>
         Returns: string
