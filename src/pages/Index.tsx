@@ -26,7 +26,7 @@ const Index = () => {
                 <TrendingUp className="h-5 w-5 text-white" />
               </div>
               <span className="text-xl font-bold font-heading bg-gradient-primary bg-clip-text text-transparent">
-                CryptoGrow
+                Cooc Global
               </span>
             </div>
             <div className="flex items-center space-x-4">
@@ -106,7 +106,7 @@ const Index = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold font-heading mb-4">
-              Why Choose <span className="bg-gradient-primary bg-clip-text text-transparent">CryptoGrow</span>?
+              Why Choose <span className="bg-gradient-primary bg-clip-text text-transparent">Cooc Global</span>?
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Built for serious investors who demand premium tools and unmatched security.
@@ -208,14 +208,14 @@ const Index = () => {
               <TrendingUp className="h-5 w-5 text-white" />
             </div>
             <span className="text-xl font-bold font-heading bg-gradient-primary bg-clip-text text-transparent">
-              CryptoGrow
+              Cooc Global
             </span>
           </div>
           <p className="text-muted-foreground mb-6">
             The future of cryptocurrency investing starts here.
           </p>
           <p className="text-sm text-muted-foreground">
-            © 2024 CryptoGrow. All rights reserved. | Privacy Policy | Terms of Service
+            © 2024 Cooc Global. All rights reserved. | Privacy Policy | Terms of Service
           </p>
         </div>
       </footer>

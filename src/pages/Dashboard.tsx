@@ -11,6 +11,7 @@ import InvestmentSection from '@/components/InvestmentSection';
 import TransactionHistory from '@/components/TransactionHistory';
 import DeveloperPanel from '@/components/DeveloperPanel';
 import ReferralSection from '@/components/ReferralSection';
+import PriceTicker from '@/components/PriceTicker';
 
 interface Profile {
   full_name: string;
@@ -109,7 +110,7 @@ const Dashboard = () => {
               <Coins className="w-6 h-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-xl font-bold">Collo Invest</h1>
+              <h1 className="text-xl font-bold">Cooc Global</h1>
               <p className="text-sm text-muted-foreground">Welcome, {profile?.full_name}</p>
             </div>
           </div>
@@ -127,6 +128,9 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
+        {/* Price Ticker */}
+        <PriceTicker />
+        
         {/* Wallet Balance Card */}
         <Card className="mb-8 bg-gradient-to-r from-primary/10 to-brand-secondary/10">
           <CardHeader>
