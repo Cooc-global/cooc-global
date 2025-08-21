@@ -58,118 +58,115 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Create Offer Card */}
+    <div className="space-y-4">
+      {/* Compact Create Offer Card */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <div className="flex items-center">
-              <ShoppingCart className="w-5 h-5 mr-2" />
-              Sell Your Coins
-            </div>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center text-sm">
+              <ShoppingCart className="w-4 h-4 mr-2" />
+              Sell Coins
+            </CardTitle>
             <Button 
               variant="outline" 
               size="sm"
               onClick={() => setShowForm(!showForm)}
+              className="h-7 px-3 text-xs"
             >
-              <Plus className="w-4 h-4 mr-2" />
-              {showForm ? 'Cancel' : 'Create Offer'}
+              <Plus className="w-3 h-3 mr-1" />
+              {showForm ? 'Cancel' : 'Create'}
             </Button>
-          </CardTitle>
-          <CardDescription>
-            Post your coins for sale to other investors
-          </CardDescription>
+          </div>
         </CardHeader>
         
         {showForm && (
-          <CardContent>
-            <form onSubmit={handleCreateOffer} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="coinsToSell">Coins to Sell</Label>
+          <CardContent className="pt-0">
+            <form onSubmit={handleCreateOffer} className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="coinsToSell" className="text-xs">Coins to Sell</Label>
                   <Input
                     id="coinsToSell"
                     type="number"
-                    placeholder="Enter number of coins"
+                    placeholder="Amount"
                     value={coinsToSell}
                     onChange={(e) => setCoinsToSell(e.target.value)}
-                    min="0.01"
-                    step="0.01"
                     max={wallet?.balance || 0}
+                    className="h-8 text-sm"
                     required
                   />
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Available: {wallet?.balance?.toLocaleString() || 0} CLC
                   </p>
                 </div>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="pricePerCoin">Price per Coin (KSH)</Label>
+                <div>
+                  <Label htmlFor="pricePerCoin" className="text-xs">Price (KSH)</Label>
                   <Input
                     id="pricePerCoin"
                     type="number"
                     placeholder="1.00"
                     value={pricePerCoin}
                     onChange={(e) => setPricePerCoin(e.target.value)}
-                    min="0.01"
-                    step="0.01"
+                    className="h-8 text-sm"
                     required
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="phoneNumber">Contact Phone Number</Label>
+              <div>
+                <Label htmlFor="phoneNumber" className="text-xs">Phone Number</Label>
                 <Input
                   id="phoneNumber"
                   type="tel"
                   placeholder="+254 XXX XXX XXX"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
-                  pattern="[+]?[0-9\s\-\(\)]{10,15}"
-                  title="Enter a valid phone number (10-15 digits, may include +, spaces, dashes, parentheses)"
+                  className="h-8 text-sm"
                   required
                 />
-                <p className="text-xs text-muted-foreground">
-                  Format: +254XXXXXXXXX or 0XXXXXXXXX
-                </p>
               </div>
 
-
-              <div className="text-sm text-muted-foreground">
-                Total Value: {coinsToSell && pricePerCoin ? 
-                  `${(parseFloat(coinsToSell || '0') * parseFloat(pricePerCoin || '0')).toLocaleString()} KSH` 
-                  : '0 KSH'}
+              <div className="flex items-center justify-between">
+                <div className="text-xs text-muted-foreground">
+                  Total: {coinsToSell && pricePerCoin ? 
+                    `${(parseFloat(coinsToSell || '0') * parseFloat(pricePerCoin || '0')).toLocaleString()} KSH` 
+                    : '0 KSH'}
+                </div>
+                <Button type="submit" className="h-8 px-4 text-xs" disabled={loading}>
+                  {loading ? 'Posting...' : 'Post Offer'}
+                </Button>
               </div>
-
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Creating Offer...' : 'Post to Marketplace'}
-              </Button>
             </form>
           </CardContent>
         )}
       </Card>
 
-      {/* Marketplace Offers */}
+      {/* Compact Marketplace Activity */}
       <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Marketplace Activity</CardTitle>
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm">Market Activity</CardTitle>
+            <Badge variant="outline" className="text-xs px-2 py-0 h-5">
+              {offers.length} offers
+            </Badge>
+          </div>
         </CardHeader>
         <CardContent className="pt-0">
           {offers.length === 0 ? (
-            <div className="text-center py-4 text-sm text-muted-foreground">
-              No coins available for sale
+            <div className="text-center py-3 text-xs text-muted-foreground">
+              No offers available
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-2 max-h-96 overflow-y-auto">
               {offers.map((offer) => (
-                <div key={offer.id} className="border rounded-md p-2 space-y-1">
+                <div key={offer.id} className="border rounded p-3 space-y-2">
                    <div className="flex justify-between items-center">
                      <div className="flex items-center gap-2">
                        <span className="text-sm font-medium">{offer.seller_name}</span>
                        <Badge 
                          variant={offer.status === 'sold' ? 'destructive' : 'default'}
-                         className={`text-xs px-1.5 py-0.5 ${offer.status === 'sold' ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600 text-white'}`}
+                         className={`text-xs px-1.5 py-0 h-4 ${offer.status === 'sold' ? 'bg-red-500' : 'bg-green-500 text-white'}`}
                        >
                          {offer.status === 'sold' ? 'SOLD' : 'LIVE'}
                        </Badge>
@@ -179,7 +176,7 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
                          variant="ghost"
                          size="sm"
                          onClick={() => handleDeleteOffer(offer.id)}
-                         className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                         className="h-6 w-6 p-0 text-destructive"
                        >
                          <Trash2 className="w-3 h-3" />
                        </Button>
@@ -194,21 +191,21 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
                    )}
                    {!user && (
                      <div className="text-xs text-muted-foreground">
-                       Sign in to view contact
+                       Sign in to view contact details
                      </div>
                    )}
                   
                   <div className="grid grid-cols-3 gap-2 text-xs">
                     <div>
-                      <span className="text-muted-foreground">Coins</span>
+                      <span className="text-muted-foreground block">Coins</span>
                       <div className="font-medium">{offer.coins_for_sale.toLocaleString()}</div>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Price</span>
+                      <span className="text-muted-foreground block">Price</span>
                       <div className="font-medium">{offer.price_per_coin} KSH</div>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Total</span>
+                      <span className="text-muted-foreground block">Total</span>
                       <div className="font-medium">{(offer.coins_for_sale * offer.price_per_coin).toLocaleString()} KSH</div>
                     </div>
                   </div>

@@ -2,9 +2,8 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
-import { ShoppingCart, Phone, Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { ShoppingCart, Plus, Trash2, ChevronDown, ChevronUp, Phone } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useMarketplace, MarketplaceFormData } from '@/hooks/useMarketplace';
@@ -33,7 +32,6 @@ const MarketplacePanel = ({ wallet, profile }: MarketplacePanelProps) => {
   const [pricePerCoin, setPricePerCoin] = useState('1.00');
   const [phoneNumber, setPhoneNumber] = useState('');
 
-
   const handleCreateOffer = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -46,7 +44,6 @@ const MarketplacePanel = ({ wallet, profile }: MarketplacePanelProps) => {
     const success = await createOffer(formData, profile, wallet?.balance || 0);
     
     if (success) {
-      // Reset form
       setCoinsToSell('');
       setPricePerCoin('1.00');
       setPhoneNumber('');
@@ -60,12 +57,12 @@ const MarketplacePanel = ({ wallet, profile }: MarketplacePanelProps) => {
 
   return (
     <Card className="w-full">
-      <CardHeader className="pb-1">
+      <CardHeader className="pb-1 px-3 pt-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center text-xs">
+          <CardTitle className="flex items-center text-xs font-medium">
             <ShoppingCart className="w-3 h-3 mr-1" />
-            Marketplace
-            <Badge variant="outline" className="ml-1 text-xs px-1 h-4">
+            Market
+            <Badge variant="outline" className="ml-1 text-xs px-1 py-0 h-3">
               {activeOffers.length}
             </Badge>
           </CardTitle>
@@ -73,127 +70,166 @@ const MarketplacePanel = ({ wallet, profile }: MarketplacePanelProps) => {
             variant="ghost" 
             size="sm"
             onClick={() => setShowForm(!showForm)}
-            className="h-5 px-1 text-xs"
+            className="h-4 px-1 text-xs hover:bg-muted"
           >
-            <Plus className="w-2 h-2 mr-1" />
-            Sell
+            <Plus className="w-2 h-2" />
           </Button>
         </div>
       </CardHeader>
       
-      <CardContent className="pt-0 space-y-2">
+      <CardContent className="px-3 pb-3 pt-0">
         {showForm && (
-          <div className="border rounded-sm p-2 bg-muted/30">
+          <div className="border rounded p-2 bg-muted/30 mb-2">
             <form onSubmit={handleCreateOffer} className="space-y-1">
-              <div className="grid grid-cols-2 gap-1">
+              <div className="flex gap-1">
                 <Input
                   type="number"
                   placeholder="Coins"
                   value={coinsToSell}
                   onChange={(e) => setCoinsToSell(e.target.value)}
-                  className="h-6 text-xs"
+                  className="h-5 text-xs flex-1"
                   required
                 />
                 <Input
                   type="number"
-                  placeholder="Price KSH"
+                  placeholder="Price"
                   value={pricePerCoin}
                   onChange={(e) => setPricePerCoin(e.target.value)}
-                  className="h-6 text-xs"
+                  className="h-5 text-xs flex-1"
                   required
                 />
               </div>
               <Input
                 type="tel"
-                placeholder="+254 XXX XXX XXX"
+                placeholder="Phone"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                className="h-6 text-xs"
+                className="h-5 text-xs"
                 required
               />
-              <Button type="submit" className="w-full h-6 text-xs" disabled={loading}>
-                {loading ? 'Posting...' : 'Post'}
+              <Button type="submit" className="w-full h-5 text-xs" disabled={loading}>
+                {loading ? 'Adding...' : 'Add'}
               </Button>
             </form>
           </div>
         )}
 
-        {/* Active Offers - Compact */}
+        {/* Compact Active Offers */}
         <div className="space-y-1">
-          <div className="flex items-center justify-between">
-            <h4 className="text-xs font-medium text-muted-foreground">Active</h4>
-            {activeOffers.length > 1 && (
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => setIsExpanded(!isExpanded)}
-                className="h-4 px-1 text-xs"
-              >
-                {isExpanded ? <ChevronUp className="w-2 h-2" /> : <ChevronDown className="w-2 h-2" />}
-              </Button>
-            )}
-          </div>
-          
-          {activeOffers.length === 0 ? (
-            <p className="text-xs text-muted-foreground py-1">No offers</p>
-          ) : (
-            <div className="space-y-1">
-              {/* Show only first offer by default */}
-              <div className="border rounded-sm p-1.5 text-xs">
+          {activeOffers.length > 0 && (
+            <>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-muted-foreground">Active</span>
+                {activeOffers.length > 1 && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    className="h-3 px-1"
+                  >
+                    {isExpanded ? 
+                      <ChevronUp className="w-2 h-2" /> : 
+                      <ChevronDown className="w-2 h-2" />
+                    }
+                  </Button>
+                )}
+              </div>
+              
+              {/* First offer always visible */}
+              <div className="border rounded p-1.5 bg-card">
                 <div className="flex justify-between items-center mb-1">
-                  <span className="font-medium truncate text-xs">{activeOffers[0].seller_name}</span>
-                  <Badge variant="default" className="text-xs px-1 h-3 bg-green-500">•</Badge>
+                  <span className="text-xs font-medium truncate max-w-[80px]">
+                    {activeOffers[0].seller_name}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                    {activeOffers[0].user_id === user?.id && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteOffer(activeOffers[0].id)}
+                        className="h-3 w-3 p-0 text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="w-2 h-2" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
-                <div className="grid grid-cols-3 gap-1 text-xs">
-                  <div className="truncate">{activeOffers[0].coins_for_sale.toLocaleString()}</div>
-                  <div className="truncate">@{activeOffers[0].price_per_coin}</div>
-                  <div className="truncate">{(activeOffers[0].coins_for_sale * activeOffers[0].price_per_coin).toLocaleString()}</div>
+                
+                {user && activeOffers[0].phone_number && (
+                  <div className="flex items-center text-xs text-muted-foreground mb-1">
+                    <Phone className="w-2 h-2 mr-1" />
+                    <span className="truncate text-xs">
+                      {displayPhoneNumber(activeOffers[0])}
+                    </span>
+                  </div>
+                )}
+                
+                <div className="flex justify-between text-xs">
+                  <span>{activeOffers[0].coins_for_sale.toLocaleString()}</span>
+                  <span>@{activeOffers[0].price_per_coin}</span>
+                  <span>{(activeOffers[0].coins_for_sale * activeOffers[0].price_per_coin).toLocaleString()}</span>
                 </div>
               </div>
               
-              {/* Collapsible additional offers */}
-              {isExpanded && activeOffers.slice(1).map((offer) => (
-                <div key={offer.id} className="border rounded-sm p-1.5 text-xs">
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="font-medium truncate text-xs">{offer.seller_name}</span>
-                    <div className="flex items-center gap-1">
-                      <Badge variant="default" className="text-xs px-1 h-3 bg-green-500">•</Badge>
-                      {offer.user_id === user?.id && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteOffer(offer.id)}
-                          className="h-3 w-3 p-0 text-destructive"
-                        >
-                          <Trash2 className="w-2 h-2" />
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-3 gap-1 text-xs">
-                    <div className="truncate">{offer.coins_for_sale.toLocaleString()}</div>
-                    <div className="truncate">@{offer.price_per_coin}</div>
-                    <div className="truncate">{(offer.coins_for_sale * offer.price_per_coin).toLocaleString()}</div>
-                  </div>
-                </div>
-              ))}
+              {/* Additional offers - collapsible */}
+              {activeOffers.length > 1 && (
+                <Collapsible open={isExpanded}>
+                  <CollapsibleContent>
+                    {activeOffers.slice(1, 3).map((offer) => (
+                      <div key={offer.id} className="border rounded p-1.5 bg-card mt-1">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-xs font-medium truncate max-w-[80px]">
+                            {offer.seller_name}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                            {offer.user_id === user?.id && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteOffer(offer.id)}
+                                className="h-3 w-3 p-0 text-destructive hover:bg-destructive/10"
+                              >
+                                <Trash2 className="w-2 h-2" />
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex justify-between text-xs">
+                          <span>{offer.coins_for_sale.toLocaleString()}</span>
+                          <span>@{offer.price_per_coin}</span>
+                          <span>{(offer.coins_for_sale * offer.price_per_coin).toLocaleString()}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
+            </>
+          )}
+          
+          {activeOffers.length === 0 && (
+            <div className="text-center py-2">
+              <span className="text-xs text-muted-foreground">No active offers</span>
             </div>
           )}
         </div>
 
-        {/* Recent Sales - Minimized */}
+        {/* Recent Sales - Very minimal */}
         {recentSales.length > 0 && (
-          <div className="space-y-1">
-            <h4 className="text-xs font-medium text-muted-foreground">Recent</h4>
-            <div className="border rounded-sm p-1.5 text-xs bg-muted/20">
-              <div className="flex justify-between items-center">
-                <span className="font-medium truncate text-xs">{recentSales[0].seller_name}</span>
-                <Badge variant="secondary" className="text-xs px-1 h-3">✓</Badge>
-              </div>
-              <div className="grid grid-cols-3 gap-1 text-xs text-muted-foreground">
-                <div>{recentSales[0].coins_for_sale.toLocaleString()}</div>
-                <div>@{recentSales[0].price_per_coin}</div>
-                <div>{(recentSales[0].coins_for_sale * recentSales[0].price_per_coin).toLocaleString()}</div>
+          <div className="mt-2 pt-2 border-t">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-medium text-muted-foreground">Recent</span>
+              <Badge variant="secondary" className="text-xs px-1 py-0 h-3">
+                ✓
+              </Badge>
+            </div>
+            <div className="text-xs text-muted-foreground">
+              <div className="flex justify-between">
+                <span className="truncate max-w-[60px]">{recentSales[0].seller_name}</span>
+                <span>{recentSales[0].coins_for_sale.toLocaleString()}</span>
+                <span>@{recentSales[0].price_per_coin}</span>
               </div>
             </div>
           </div>
