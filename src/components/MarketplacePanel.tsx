@@ -1,25 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { ShoppingCart, Phone, Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-
-interface MarketplaceOffer {
-  id: string;
-  seller_name: string;
-  phone_number: string;
-  coins_for_sale: number;
-  price_per_coin: number;
-  created_at: string;
-  user_id: string;
-  status: string;
-}
+import { useMarketplace, MarketplaceFormData } from '@/hooks/useMarketplace';
 
 interface MarketplacePanelProps {
   wallet: { balance: number; locked_balance: number } | null;
@@ -28,9 +16,15 @@ interface MarketplacePanelProps {
 
 const MarketplacePanel = ({ wallet, profile }: MarketplacePanelProps) => {
   const { user } = useAuth();
-  const { toast } = useToast();
-  const [offers, setOffers] = useState<MarketplaceOffer[]>([]);
-  const [loading, setLoading] = useState(false);
+  const {
+    activeOffers,
+    recentSales,
+    loading,
+    createOffer,
+    deleteOffer,
+    displayPhoneNumber
+  } = useMarketplace();
+  
   const [showForm, setShowForm] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   
@@ -39,181 +33,30 @@ const MarketplacePanel = ({ wallet, profile }: MarketplacePanelProps) => {
   const [pricePerCoin, setPricePerCoin] = useState('1.00');
   const [phoneNumber, setPhoneNumber] = useState('');
 
-  useEffect(() => {
-    fetchOffers();
-  }, [user]);
-
-  const isFictionalUser = (offer: MarketplaceOffer): boolean => {
-    const isCurrentUser = offer.user_id === user?.id;
-    const hasSafaricomNumber = offer.phone_number?.includes('+254 07') || offer.phone_number?.startsWith('07');
-    return !isCurrentUser && hasSafaricomNumber;
-  };
-
-  const hidePhoneDigits = (phoneNumber: string): string => {
-    if (!phoneNumber || phoneNumber.length < 3) return phoneNumber;
-    return phoneNumber.slice(0, -3) + '***';
-  };
-
-  const displayPhoneNumber = (offer: MarketplaceOffer): string => {
-    if (isFictionalUser(offer) && offer.status === 'sold') {
-      return hidePhoneDigits(offer.phone_number);
-    }
-    return offer.phone_number;
-  };
-
-  const fetchOffers = async () => {
-    try {
-      if (user) {
-        const { data, error } = await supabase
-          .from('marketplace')
-          .select('*')
-          .in('status', ['active', 'sold'])
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
-        setOffers(data || []);
-      } else {
-        const { data: activeData, error: activeError } = await supabase
-          .rpc('get_marketplace_offers_public');
-        
-        const { data: soldData, error: soldError } = await supabase
-          .from('marketplace')
-          .select('id, user_id, seller_name, coins_for_sale, price_per_coin, description, status, created_at, updated_at')
-          .eq('status', 'sold')
-          .order('created_at', { ascending: false });
-
-        if (activeError) throw activeError;
-        if (soldError) throw soldError;
-
-        const allOffers = [
-          ...(activeData || []).map(offer => ({ ...offer, phone_number: '' })),
-          ...(soldData || []).map(offer => ({ ...offer, phone_number: '' }))
-        ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-        
-        setOffers(allOffers);
-      }
-    } catch (error) {
-      console.error('Error fetching marketplace offers:', error);
-    }
-  };
-
-  const validatePhoneNumber = (phone: string): boolean => {
-    const phoneRegex = /^[+]?[0-9\s\-\(\)]{10,15}$/;
-    return phoneRegex.test(phone);
-  };
-
-  const validateAmount = (amount: string): boolean => {
-    const num = parseFloat(amount);
-    return !isNaN(num) && num > 0 && num <= (wallet?.balance || 0);
-  };
 
   const handleCreateOffer = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!coinsToSell || !phoneNumber || !pricePerCoin) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive",
-      });
-      return;
-    }
+    const formData: MarketplaceFormData = {
+      coinsToSell,
+      pricePerCoin,
+      phoneNumber
+    };
 
-    if (!validatePhoneNumber(phoneNumber)) {
-      toast({
-        title: "Error",
-        description: "Please enter a valid phone number (10-15 digits)",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!validateAmount(coinsToSell)) {
-      toast({
-        title: "Error",
-        description: "Invalid coin amount or insufficient balance",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const coinsAmount = parseFloat(coinsToSell);
-    const priceAmount = parseFloat(pricePerCoin);
+    const success = await createOffer(formData, profile, wallet?.balance || 0);
     
-    if (priceAmount <= 0) {
-      toast({
-        title: "Error",
-        description: "Price per coin must be greater than 0",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const { error } = await supabase
-        .from('marketplace')
-        .insert({
-          user_id: user?.id,
-          seller_name: profile?.full_name || 'Anonymous',
-          phone_number: phoneNumber,
-          coins_for_sale: coinsAmount,
-          price_per_coin: parseFloat(pricePerCoin)
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Your coin sale offer has been posted to the marketplace",
-      });
-
+    if (success) {
+      // Reset form
       setCoinsToSell('');
       setPricePerCoin('1.00');
       setPhoneNumber('');
       setShowForm(false);
-      
-      fetchOffers();
-    } catch (error) {
-      console.error('Error creating marketplace offer:', error);
-      toast({
-        title: "Error",
-        description: "Failed to create marketplace offer",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleDeleteOffer = async (offerId: string) => {
-    try {
-      const { error } = await supabase
-        .from('marketplace')
-        .delete()
-        .eq('id', offerId)
-        .eq('user_id', user?.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Offer removed from marketplace",
-      });
-
-      fetchOffers();
-    } catch (error) {
-      console.error('Error deleting offer:', error);
-      toast({
-        title: "Error",
-        description: "Failed to remove offer",
-        variant: "destructive",
-      });
-    }
+    await deleteOffer(offerId);
   };
-
-  const activeOffers = offers.filter(offer => offer.status === 'active');
-  const recentSales = offers.filter(offer => offer.status === 'sold').slice(0, 3);
 
   return (
     <Card className="w-full">
