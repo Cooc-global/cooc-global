@@ -317,67 +317,63 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
 
       {/* Marketplace Offers */}
       <Card>
-        <CardHeader>
-          <CardTitle>Marketplace Activity</CardTitle>
-          <CardDescription>
-            Current and recent coin trading activity
-          </CardDescription>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Marketplace Activity</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           {offers.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No coins available for sale at the moment
+            <div className="text-center py-4 text-sm text-muted-foreground">
+              No coins available for sale
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-2">
               {offers.map((offer) => (
-                <div key={offer.id} className="border rounded-lg p-4 space-y-3">
-                   <div className="flex justify-between items-start">
-                     <div className="space-y-2">
-                       <div className="flex items-center gap-2">
-                         <div className="font-semibold">{offer.seller_name}</div>
-                         <Badge 
-                           variant={offer.status === 'sold' ? 'destructive' : 'default'}
-                           className={offer.status === 'sold' ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600 text-white'}
-                         >
-                           {offer.status === 'sold' ? 'SOLD' : 'AVAILABLE'}
-                         </Badge>
-                       </div>
-                       {user && offer.phone_number && (
-                         <div className="flex items-center text-sm text-muted-foreground">
-                           <Phone className="w-4 h-4 mr-1" />
-                           {displayPhoneNumber(offer)}
-                         </div>
-                       )}
-                       {!user && (
-                         <div className="text-sm text-muted-foreground">
-                           Sign in to view contact details
-                         </div>
-                       )}
+                <div key={offer.id} className="border rounded-md p-2 space-y-1">
+                   <div className="flex justify-between items-center">
+                     <div className="flex items-center gap-2">
+                       <span className="text-sm font-medium">{offer.seller_name}</span>
+                       <Badge 
+                         variant={offer.status === 'sold' ? 'destructive' : 'default'}
+                         className={`text-xs px-1.5 py-0.5 ${offer.status === 'sold' ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600 text-white'}`}
+                       >
+                         {offer.status === 'sold' ? 'SOLD' : 'LIVE'}
+                       </Badge>
                      </div>
                      {offer.user_id === user?.id && offer.status === 'active' && (
                        <Button
                          variant="ghost"
                          size="sm"
                          onClick={() => handleDeleteOffer(offer.id)}
-                         className="text-destructive hover:text-destructive"
+                         className="h-6 w-6 p-0 text-destructive hover:text-destructive"
                        >
-                         <Trash2 className="w-4 h-4" />
+                         <Trash2 className="w-3 h-3" />
                        </Button>
                      )}
                    </div>
+                   
+                   {user && offer.phone_number && (
+                     <div className="flex items-center text-xs text-muted-foreground">
+                       <Phone className="w-3 h-3 mr-1" />
+                       {displayPhoneNumber(offer)}
+                     </div>
+                   )}
+                   {!user && (
+                     <div className="text-xs text-muted-foreground">
+                       Sign in to view contact
+                     </div>
+                   )}
                   
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                  <div className="grid grid-cols-3 gap-2 text-xs">
                     <div>
-                      <span className="text-muted-foreground">Coins:</span>
-                      <div className="font-medium">{offer.coins_for_sale.toLocaleString()} CLC</div>
+                      <span className="text-muted-foreground">Coins</span>
+                      <div className="font-medium">{offer.coins_for_sale.toLocaleString()}</div>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Price:</span>
-                      <div className="font-medium">{offer.price_per_coin} KSH/coin</div>
+                      <span className="text-muted-foreground">Price</span>
+                      <div className="font-medium">{offer.price_per_coin} KSH</div>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Total:</span>
+                      <span className="text-muted-foreground">Total</span>
                       <div className="font-medium">{(offer.coins_for_sale * offer.price_per_coin).toLocaleString()} KSH</div>
                     </div>
                   </div>
