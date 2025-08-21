@@ -333,6 +333,10 @@ export type Database = {
         Args: { event_action: string; event_details?: Json }
         Returns: undefined
       }
+      process_daily_returns_now: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       process_transfer_with_fee: {
         Args: { amount: number; recipient_address: string; sender_id: string }
         Returns: Json
