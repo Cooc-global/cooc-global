@@ -159,7 +159,7 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
             </div>
           ) : (
             <div className="space-y-2 max-h-96 overflow-y-auto">
-              {offers.map((offer) => (
+              {[...offers].sort((a, b) => a.status === 'active' ? -1 : b.status === 'active' ? 1 : 0).map((offer) => (
                 <div key={offer.id} className="border rounded p-3 space-y-2">
                    <div className="flex justify-between items-center">
                      <div className="flex items-center gap-2">
