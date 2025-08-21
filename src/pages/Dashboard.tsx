@@ -13,7 +13,6 @@ import DeveloperPanel from '@/components/DeveloperPanel';
 import ReferralSection from '@/components/ReferralSection';
 import PriceTicker from '@/components/PriceTicker';
 import MarketplacePanel from '@/components/MarketplacePanel';
-import MarketplaceFunctionalityPanel from '@/components/MarketplaceFunctionalityPanel';
 
 interface Profile {
   full_name: string;
@@ -192,9 +191,8 @@ const Dashboard = () => {
               <div className="lg:col-span-2">
                 <WalletSection wallet={wallet} profile={profile} onWalletUpdate={fetchUserData} />
               </div>
-              <div className="space-y-6">
+              <div>
                 <MarketplacePanel wallet={wallet} profile={profile} />
-                <MarketplaceFunctionalityPanel wallet={wallet} profile={profile} />
               </div>
             </div>
           </TabsContent>
