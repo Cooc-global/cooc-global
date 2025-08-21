@@ -60,182 +60,141 @@ const MarketplacePanel = ({ wallet, profile }: MarketplacePanelProps) => {
 
   return (
     <Card className="w-full">
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-1">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center text-sm">
-            <ShoppingCart className="w-4 h-4 mr-2" />
+          <CardTitle className="flex items-center text-xs">
+            <ShoppingCart className="w-3 h-3 mr-1" />
             Marketplace
-            <Badge variant="outline" className="ml-2 text-xs">
-              {activeOffers.length} Active
+            <Badge variant="outline" className="ml-1 text-xs px-1 h-4">
+              {activeOffers.length}
             </Badge>
           </CardTitle>
           <Button 
             variant="ghost" 
             size="sm"
             onClick={() => setShowForm(!showForm)}
-            className="h-6 px-2 text-xs"
+            className="h-5 px-1 text-xs"
           >
-            <Plus className="w-3 h-3 mr-1" />
+            <Plus className="w-2 h-2 mr-1" />
             Sell
           </Button>
         </div>
       </CardHeader>
       
-      <CardContent className="pt-0 space-y-3">
+      <CardContent className="pt-0 space-y-2">
         {showForm && (
-          <div className="border rounded-md p-3 bg-muted/30">
-            <form onSubmit={handleCreateOffer} className="space-y-2">
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <Label htmlFor="coinsToSell" className="text-xs">Coins</Label>
-                  <Input
-                    id="coinsToSell"
-                    type="number"
-                    placeholder="Amount"
-                    value={coinsToSell}
-                    onChange={(e) => setCoinsToSell(e.target.value)}
-                    className="h-7 text-xs"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="pricePerCoin" className="text-xs">Price (KSH)</Label>
-                  <Input
-                    id="pricePerCoin"
-                    type="number"
-                    placeholder="1.00"
-                    value={pricePerCoin}
-                    onChange={(e) => setPricePerCoin(e.target.value)}
-                    className="h-7 text-xs"
-                    required
-                  />
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="phoneNumber" className="text-xs">Phone</Label>
+          <div className="border rounded-sm p-2 bg-muted/30">
+            <form onSubmit={handleCreateOffer} className="space-y-1">
+              <div className="grid grid-cols-2 gap-1">
                 <Input
-                  id="phoneNumber"
-                  type="tel"
-                  placeholder="+254 XXX XXX XXX"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  className="h-7 text-xs"
+                  type="number"
+                  placeholder="Coins"
+                  value={coinsToSell}
+                  onChange={(e) => setCoinsToSell(e.target.value)}
+                  className="h-6 text-xs"
+                  required
+                />
+                <Input
+                  type="number"
+                  placeholder="Price KSH"
+                  value={pricePerCoin}
+                  onChange={(e) => setPricePerCoin(e.target.value)}
+                  className="h-6 text-xs"
                   required
                 />
               </div>
-              <Button type="submit" className="w-full h-7 text-xs" disabled={loading}>
-                {loading ? 'Posting...' : 'Post Offer'}
+              <Input
+                type="tel"
+                placeholder="+254 XXX XXX XXX"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                className="h-6 text-xs"
+                required
+              />
+              <Button type="submit" className="w-full h-6 text-xs" disabled={loading}>
+                {loading ? 'Posting...' : 'Post'}
               </Button>
             </form>
           </div>
         )}
 
-        {/* Active Offers */}
+        {/* Active Offers - Compact */}
         <div className="space-y-1">
-          <h4 className="text-xs font-medium text-muted-foreground">Active Offers</h4>
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-medium text-muted-foreground">Active</h4>
+            {activeOffers.length > 1 && (
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="h-4 px-1 text-xs"
+              >
+                {isExpanded ? <ChevronUp className="w-2 h-2" /> : <ChevronDown className="w-2 h-2" />}
+              </Button>
+            )}
+          </div>
+          
           {activeOffers.length === 0 ? (
-            <p className="text-xs text-muted-foreground py-2">No active offers</p>
+            <p className="text-xs text-muted-foreground py-1">No offers</p>
           ) : (
             <div className="space-y-1">
-              {activeOffers.slice(0, 2).map((offer) => (
-                <div key={offer.id} className="border rounded p-2 text-xs">
+              {/* Show only first offer by default */}
+              <div className="border rounded-sm p-1.5 text-xs">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="font-medium truncate text-xs">{activeOffers[0].seller_name}</span>
+                  <Badge variant="default" className="text-xs px-1 h-3 bg-green-500">•</Badge>
+                </div>
+                <div className="grid grid-cols-3 gap-1 text-xs">
+                  <div className="truncate">{activeOffers[0].coins_for_sale.toLocaleString()}</div>
+                  <div className="truncate">@{activeOffers[0].price_per_coin}</div>
+                  <div className="truncate">{(activeOffers[0].coins_for_sale * activeOffers[0].price_per_coin).toLocaleString()}</div>
+                </div>
+              </div>
+              
+              {/* Collapsible additional offers */}
+              {isExpanded && activeOffers.slice(1).map((offer) => (
+                <div key={offer.id} className="border rounded-sm p-1.5 text-xs">
                   <div className="flex justify-between items-center mb-1">
-                    <span className="font-medium truncate">{offer.seller_name}</span>
+                    <span className="font-medium truncate text-xs">{offer.seller_name}</span>
                     <div className="flex items-center gap-1">
-                      <Badge variant="default" className="text-xs px-1 h-4 bg-green-500">
-                        LIVE
-                      </Badge>
+                      <Badge variant="default" className="text-xs px-1 h-3 bg-green-500">•</Badge>
                       {offer.user_id === user?.id && (
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDeleteOffer(offer.id)}
-                          className="h-4 w-4 p-0 text-destructive"
+                          className="h-3 w-3 p-0 text-destructive"
                         >
                           <Trash2 className="w-2 h-2" />
                         </Button>
                       )}
                     </div>
                   </div>
-                  
-                  {user && offer.phone_number && (
-                    <div className="flex items-center text-xs text-muted-foreground mb-1">
-                      <Phone className="w-2 h-2 mr-1" />
-                      {displayPhoneNumber(offer)}
-                    </div>
-                  )}
-                  
                   <div className="grid grid-cols-3 gap-1 text-xs">
-                    <div>
-                      <span className="text-muted-foreground">Coins:</span>
-                      <div className="font-medium">{offer.coins_for_sale.toLocaleString()}</div>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">@</span>
-                      <div className="font-medium">{offer.price_per_coin} KSH</div>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Total:</span>
-                      <div className="font-medium">{(offer.coins_for_sale * offer.price_per_coin).toLocaleString()}</div>
-                    </div>
+                    <div className="truncate">{offer.coins_for_sale.toLocaleString()}</div>
+                    <div className="truncate">@{offer.price_per_coin}</div>
+                    <div className="truncate">{(offer.coins_for_sale * offer.price_per_coin).toLocaleString()}</div>
                   </div>
                 </div>
               ))}
-              
-              {activeOffers.length > 2 && (
-                <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-                  <CollapsibleTrigger asChild>
-                    <Button variant="ghost" className="w-full h-6 text-xs">
-                      {isExpanded ? (
-                        <>Less <ChevronUp className="w-3 h-3 ml-1" /></>
-                      ) : (
-                        <>+{activeOffers.length - 2} more <ChevronDown className="w-3 h-3 ml-1" /></>
-                      )}
-                    </Button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="space-y-1">
-                    {activeOffers.slice(2).map((offer) => (
-                      <div key={offer.id} className="border rounded p-2 text-xs">
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="font-medium truncate">{offer.seller_name}</span>
-                          <Badge variant="default" className="text-xs px-1 h-4 bg-green-500">
-                            LIVE
-                          </Badge>
-                        </div>
-                        <div className="grid grid-cols-3 gap-1 text-xs">
-                          <div>{offer.coins_for_sale.toLocaleString()}</div>
-                          <div>@{offer.price_per_coin}</div>
-                          <div>{(offer.coins_for_sale * offer.price_per_coin).toLocaleString()}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </CollapsibleContent>
-                </Collapsible>
-              )}
             </div>
           )}
         </div>
 
-        {/* Recent Sales */}
+        {/* Recent Sales - Minimized */}
         {recentSales.length > 0 && (
           <div className="space-y-1">
-            <h4 className="text-xs font-medium text-muted-foreground">Recent Sales</h4>
-            <div className="space-y-1">
-              {recentSales.map((offer) => (
-                <div key={offer.id} className="border rounded p-2 text-xs bg-muted/20">
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium truncate">{offer.seller_name}</span>
-                    <Badge variant="destructive" className="text-xs px-1 h-4">
-                      SOLD
-                    </Badge>
-                  </div>
-                  <div className="grid grid-cols-3 gap-1 text-xs text-muted-foreground">
-                    <div>{offer.coins_for_sale.toLocaleString()}</div>
-                    <div>@{offer.price_per_coin}</div>
-                    <div>{(offer.coins_for_sale * offer.price_per_coin).toLocaleString()}</div>
-                  </div>
-                </div>
-              ))}
+            <h4 className="text-xs font-medium text-muted-foreground">Recent</h4>
+            <div className="border rounded-sm p-1.5 text-xs bg-muted/20">
+              <div className="flex justify-between items-center">
+                <span className="font-medium truncate text-xs">{recentSales[0].seller_name}</span>
+                <Badge variant="secondary" className="text-xs px-1 h-3">✓</Badge>
+              </div>
+              <div className="grid grid-cols-3 gap-1 text-xs text-muted-foreground">
+                <div>{recentSales[0].coins_for_sale.toLocaleString()}</div>
+                <div>@{recentSales[0].price_per_coin}</div>
+                <div>{(recentSales[0].coins_for_sale * recentSales[0].price_per_coin).toLocaleString()}</div>
+              </div>
             </div>
           </div>
         )}
