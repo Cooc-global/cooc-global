@@ -12,6 +12,7 @@ import TransactionHistory from '@/components/TransactionHistory';
 import DeveloperPanel from '@/components/DeveloperPanel';
 import ReferralSection from '@/components/ReferralSection';
 import PriceTicker from '@/components/PriceTicker';
+import MarketplacePanel from '@/components/MarketplacePanel';
 
 interface Profile {
   full_name: string;
@@ -186,7 +187,14 @@ const Dashboard = () => {
           </TabsList>
 
           <TabsContent value="wallet">
-            <WalletSection wallet={wallet} profile={profile} onWalletUpdate={fetchUserData} />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <WalletSection wallet={wallet} profile={profile} onWalletUpdate={fetchUserData} />
+              </div>
+              <div>
+                <MarketplacePanel wallet={wallet} profile={profile} />
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="invest">
