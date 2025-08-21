@@ -149,7 +149,7 @@ const Auth = () => {
               <Coins className="w-8 h-8 text-primary-foreground" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold">Collo Invest</CardTitle>
+          <CardTitle className="text-2xl font-bold">Cooc Global</CardTitle>
           <CardDescription>Your gateway to CLC investment opportunities</CardDescription>
         </CardHeader>
         <CardContent>
