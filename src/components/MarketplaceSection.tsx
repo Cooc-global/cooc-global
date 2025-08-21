@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { ShoppingCart, Phone, Plus, Trash2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 interface MarketplaceOffer {
   id: string;
@@ -17,6 +18,7 @@ interface MarketplaceOffer {
   price_per_coin: number;
   created_at: string;
   user_id: string;
+  status: string;
 }
 
 interface MarketplaceSectionProps {
@@ -67,23 +69,32 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
         const { data, error } = await supabase
           .from('marketplace')
           .select('*')
-          .eq('status', 'active')
+          .in('status', ['active', 'sold'])
           .order('created_at', { ascending: false });
 
         if (error) throw error;
         setOffers(data || []);
       } else {
-        // For anonymous users, use the security function that excludes phone numbers
-        const { data, error } = await supabase
+        // For anonymous users, get both active and sold offers
+        const { data: activeData, error: activeError } = await supabase
           .rpc('get_marketplace_offers_public');
+        
+        const { data: soldData, error: soldError } = await supabase
+          .from('marketplace')
+          .select('id, user_id, seller_name, coins_for_sale, price_per_coin, description, status, created_at, updated_at')
+          .eq('status', 'sold')
+          .order('created_at', { ascending: false });
 
-        if (error) throw error;
-        // Add empty phone_number field for anonymous users to maintain component structure
-        const offersWithoutPhone = (data || []).map(offer => ({
-          ...offer,
-          phone_number: '' // Hidden for anonymous users
-        }));
-        setOffers(offersWithoutPhone);
+        if (activeError) throw activeError;
+        if (soldError) throw soldError;
+
+        // Combine active and sold offers for anonymous users
+        const allOffers = [
+          ...(activeData || []).map(offer => ({ ...offer, phone_number: '' })),
+          ...(soldData || []).map(offer => ({ ...offer, phone_number: '' }))
+        ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        
+        setOffers(allOffers);
       }
     } catch (error) {
       console.error('Error fetching marketplace offers:', error);
@@ -304,9 +315,9 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
       {/* Marketplace Offers */}
       <Card>
         <CardHeader>
-          <CardTitle>Active Marketplace Offers</CardTitle>
+          <CardTitle>Marketplace Activity</CardTitle>
           <CardDescription>
-            Coins available for purchase from other investors
+            Current and recent coin trading activity
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -318,32 +329,40 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
             <div className="space-y-4">
               {offers.map((offer) => (
                 <div key={offer.id} className="border rounded-lg p-4 space-y-3">
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-2">
-                      <div className="font-semibold">{offer.seller_name}</div>
-                      {user && offer.phone_number && (
-                        <div className="flex items-center text-sm text-muted-foreground">
-                          <Phone className="w-4 h-4 mr-1" />
-                          {displayPhoneNumber(offer)}
-                        </div>
-                      )}
-                      {!user && (
-                        <div className="text-sm text-muted-foreground">
-                          Sign in to view contact details
-                        </div>
-                      )}
-                    </div>
-                    {offer.user_id === user?.id && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteOffer(offer.id)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
+                   <div className="flex justify-between items-start">
+                     <div className="space-y-2">
+                       <div className="flex items-center gap-2">
+                         <div className="font-semibold">{offer.seller_name}</div>
+                         <Badge 
+                           variant={offer.status === 'sold' ? 'destructive' : 'default'}
+                           className={offer.status === 'sold' ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600 text-white'}
+                         >
+                           {offer.status === 'sold' ? 'SOLD' : 'AVAILABLE'}
+                         </Badge>
+                       </div>
+                       {user && offer.phone_number && (
+                         <div className="flex items-center text-sm text-muted-foreground">
+                           <Phone className="w-4 h-4 mr-1" />
+                           {displayPhoneNumber(offer)}
+                         </div>
+                       )}
+                       {!user && (
+                         <div className="text-sm text-muted-foreground">
+                           Sign in to view contact details
+                         </div>
+                       )}
+                     </div>
+                     {offer.user_id === user?.id && offer.status === 'active' && (
+                       <Button
+                         variant="ghost"
+                         size="sm"
+                         onClick={() => handleDeleteOffer(offer.id)}
+                         className="text-destructive hover:text-destructive"
+                       >
+                         <Trash2 className="w-4 h-4" />
+                       </Button>
+                     )}
+                   </div>
                   
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                     <div>
