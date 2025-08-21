@@ -58,10 +58,11 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
   };
 
   const displayPhoneNumber = (offer: MarketplaceOffer): string => {
-    if (isFictionalUser(offer)) {
+    // Only mask phone numbers for sold offers, show full numbers for active offers
+    if (isFictionalUser(offer) && offer.status === 'sold') {
       return hidePhoneDigits(offer.phone_number);
     }
-    return offer.phone_number; // Show real users' numbers in full
+    return offer.phone_number; // Show full numbers for active offers and real users
   };
 
   const fetchOffers = async () => {
