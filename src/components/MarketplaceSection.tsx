@@ -44,10 +44,12 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
 
   // Helper function to check if user is fictional and hide their digits
   const isFictionalUser = (offer: MarketplaceOffer): boolean => {
-    // Fictional users have phone numbers ending in 999 or specific names
-    const fictionalNames = ['Grace Wanjiku', 'Peter Kiprotich', 'Mary Achieng', 'James Mwangi', 
-                           'Susan Nyokabi', 'Daniel Ochieng', 'Faith Wambui', 'Michael Kipchoge', 'Catherine Njeri'];
-    return fictionalNames.includes(offer.seller_name) || offer.phone_number?.endsWith('999');
+    // Fictional users are those not matching the current user ID and have Kenyan names with Safaricom numbers
+    const isCurrentUser = offer.user_id === user?.id;
+    const hasSafaricomNumber = offer.phone_number?.includes('+254 07') || offer.phone_number?.startsWith('07');
+    
+    // If it's not the current user and has typical fictional characteristics, treat as fictional
+    return !isCurrentUser && hasSafaricomNumber;
   };
 
   const hidePhoneDigits = (phoneNumber: string): string => {
