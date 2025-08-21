@@ -103,114 +103,151 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <div className="bg-primary rounded-full p-2">
-              <Coins className="w-6 h-6 text-primary-foreground" />
+      {/* Compact Professional Header */}
+      <header className="sticky top-0 z-50 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3">
+                <div className="bg-gradient-to-br from-primary to-primary/80 rounded-lg p-2">
+                  <Coins className="w-5 h-5 text-primary-foreground" />
+                </div>
+                <div>
+                  <h1 className="text-lg font-bold">Cooc Global</h1>
+                  <p className="text-xs text-muted-foreground">Investment Platform</p>
+                </div>
+              </div>
+              
+              {/* Compact Balance Display */}
+              <div className="hidden md:flex items-center space-x-4 ml-8">
+                <div className="text-right">
+                  <p className="text-xs text-muted-foreground">Available</p>
+                  <p className="text-sm font-semibold text-primary">
+                    {wallet?.balance?.toLocaleString() || '0'} CLC
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-muted-foreground">Locked</p>
+                  <p className="text-sm font-semibold text-orange-500">
+                    {wallet?.locked_balance?.toLocaleString() || '0'} CLC
+                  </p>
+                </div>
+              </div>
             </div>
-            <div>
-              <h1 className="text-xl font-bold">Cooc Global</h1>
-              <p className="text-sm text-muted-foreground">Welcome, {profile?.full_name}</p>
+
+            <div className="flex items-center space-x-3">
+              <div className="text-right hidden sm:block">
+                <p className="text-xs text-muted-foreground">Welcome back</p>
+                <p className="text-sm font-medium">{profile?.full_name}</p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-md font-medium">
+                  {profile?.role === 'developer' ? 'Developer' : 'Investor'}
+                </span>
+                <Button variant="ghost" size="sm" onClick={handleSignOut}>
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
-          </div>
-          <div className="flex items-center space-x-2">
-            <span className="text-sm bg-primary/10 text-primary px-2 py-1 rounded">
-              {profile?.role === 'developer' ? 'Developer' : 'Investor'}
-            </span>
-            <Button variant="outline" size="sm" onClick={handleSignOut}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
-            </Button>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        {/* Price Ticker */}
-        <PriceTicker />
+      <main className="container mx-auto px-4 py-6">
+        {/* Price Ticker - Compact */}
+        <div className="mb-6">
+          <PriceTicker />
+        </div>
         
-        {/* Wallet Balance Card */}
-        <Card className="mb-8 bg-gradient-to-r from-primary/10 to-brand-secondary/10">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Wallet className="w-5 h-5 mr-2" />
-              Your CLC Wallet
-            </CardTitle>
-            <CardDescription>Wallet Address: {profile?.wallet_address}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Available Balance</p>
-                <p className="text-3xl font-bold text-primary">
+        {/* Mobile Balance Card - Only show on small screens */}
+        <Card className="mb-6 md:hidden bg-gradient-to-r from-primary/5 to-primary/10">
+          <CardContent className="p-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground">Available Balance</p>
+                <p className="text-xl font-bold text-primary">
                   {wallet?.balance?.toLocaleString() || '0'} CLC
                 </p>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Locked in Investments</p>
-                <p className="text-2xl font-semibold text-warning">
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground">Locked Balance</p>
+                <p className="text-xl font-bold text-orange-500">
                   {wallet?.locked_balance?.toLocaleString() || '0'} CLC
                 </p>
               </div>
             </div>
+            <p className="text-xs text-muted-foreground mt-2 text-center truncate">
+              {profile?.wallet_address}
+            </p>
           </CardContent>
         </Card>
 
-        {/* Tabs for different sections */}
+        {/* Professional Navigation */}
         <Tabs defaultValue="wallet" className="space-y-6">
-          <TabsList className={`grid w-full ${profile?.role === 'developer' ? 'grid-cols-5' : 'grid-cols-4'}`}>
-            <TabsTrigger value="wallet" className="flex items-center">
-              <Wallet className="w-4 h-4 mr-2" />
-              Wallet
-            </TabsTrigger>
-            <TabsTrigger value="invest" className="flex items-center">
-              <TrendingUp className="w-4 h-4 mr-2" />
-              Invest
-            </TabsTrigger>
-            <TabsTrigger value="referrals" className="flex items-center">
-              <Users className="w-4 h-4 mr-2" />
-              Referrals
-            </TabsTrigger>
-            <TabsTrigger value="history" className="flex items-center">
-              <History className="w-4 h-4 mr-2" />
-              History
-            </TabsTrigger>
-            {profile?.role === 'developer' && (
-              <TabsTrigger value="developer" className="flex items-center">
-                <Settings className="w-4 h-4 mr-2" />
-                Developer
+          <div className="flex items-center justify-between mb-6">
+            <TabsList className={`inline-flex h-10 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground ${profile?.role === 'developer' ? 'grid-cols-5' : 'grid-cols-4'}`}>
+              <TabsTrigger value="wallet" className="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium">
+                <Wallet className="w-4 h-4 mr-2" />
+                Wallet
               </TabsTrigger>
-            )}
-          </TabsList>
+              <TabsTrigger value="invest" className="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium">
+                <TrendingUp className="w-4 h-4 mr-2" />
+                Invest
+              </TabsTrigger>
+              <TabsTrigger value="referrals" className="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium">
+                <Users className="w-4 h-4 mr-2" />
+                Referrals
+              </TabsTrigger>
+              <TabsTrigger value="history" className="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium">
+                <History className="w-4 h-4 mr-2" />
+                History
+              </TabsTrigger>
+              {profile?.role === 'developer' && (
+                <TabsTrigger value="developer" className="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium">
+                  <Settings className="w-4 h-4 mr-2" />
+                  Admin
+                </TabsTrigger>
+              )}
+            </TabsList>
 
-          <TabsContent value="wallet">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
+            {/* Quick Stats - Desktop Only */}
+            <div className="hidden lg:flex items-center space-x-4 text-sm">
+              <div className="flex items-center space-x-1">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-muted-foreground">Online</span>
+              </div>
+              <div className="text-muted-foreground">
+                Wallet: {profile?.wallet_address?.slice(0, 8)}...{profile?.wallet_address?.slice(-4)}
+              </div>
+            </div>
+          </div>
+
+          <TabsContent value="wallet" className="mt-0">
+            <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+              <div className="xl:col-span-3">
                 <WalletSection wallet={wallet} profile={profile} onWalletUpdate={fetchUserData} />
               </div>
-              <div>
+              <div className="xl:col-span-1">
                 <MarketplacePanel wallet={wallet} profile={profile} />
               </div>
             </div>
           </TabsContent>
 
-          <TabsContent value="invest">
+          <TabsContent value="invest" className="mt-0">
             <InvestmentSection wallet={wallet} onInvestmentUpdate={fetchUserData} />
           </TabsContent>
 
-          <TabsContent value="referrals">
+          <TabsContent value="referrals" className="mt-0">
             <ReferralSection />
           </TabsContent>
 
-          <TabsContent value="history">
+          <TabsContent value="history" className="mt-0">
             <TransactionHistory />
           </TabsContent>
 
           {profile?.role === 'developer' && (
-            <TabsContent value="developer">
+            <TabsContent value="developer" className="mt-0">
               <DeveloperPanel />
             </TabsContent>
           )}
