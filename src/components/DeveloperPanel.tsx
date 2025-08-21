@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Settings, Wallet, TrendingUp, Users, DollarSign, UserPlus, UserX, Ban, CheckCircle, Trash2, TrendingDown } from 'lucide-react';
+import { Settings, Wallet, TrendingUp, Users, DollarSign, UserPlus, UserX, Ban, CheckCircle, Trash2, TrendingDown, PlayCircle, Calendar } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -66,10 +66,17 @@ const DeveloperPanel = () => {
   const [newCurrencyPair, setNewCurrencyPair] = useState('CLC/KSH');
   const [newRate, setNewRate] = useState('1.00');
 
+  // Daily returns state  
+  const [returnsProcessing, setReturnsProcessing] = useState(false);
+  const [dailyReturnsData, setDailyReturnsData] = useState<any[]>([]);
+  const [investmentsData, setInvestmentsData] = useState<any[]>([]);
+  const [returnsLoading, setReturnsLoading] = useState(false);
+
   useEffect(() => {
     fetchDeveloperStats();
     fetchAllUsers();
     fetchExchangeRates();
+    fetchInvestmentsData();
   }, []);
 
   const fetchAllUsers = async () => {
@@ -354,6 +361,81 @@ const DeveloperPanel = () => {
     }
   };
 
+  const fetchInvestmentsData = async () => {
+    setReturnsLoading(true);
+    try {
+      // Get all investments with user details
+      const { data: investments, error: investmentsError } = await supabase
+        .from('investments')
+        .select(`
+          *,
+          profiles!inner(full_name, email)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (investmentsError) throw investmentsError;
+
+      // Get today's daily returns
+      const { data: dailyReturns, error: returnsError } = await supabase
+        .from('daily_returns')
+        .select(`
+          *,
+          profiles!inner(full_name),
+          investments!inner(amount)
+        `)
+        .eq('return_date', new Date().toISOString().split('T')[0])
+        .order('created_at', { ascending: false });
+
+      if (returnsError) throw returnsError;
+
+      setInvestmentsData(investments || []);
+      setDailyReturnsData(dailyReturns || []);
+    } catch (error) {
+      console.error('Error fetching investments data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load investments data",
+        variant: "destructive",
+      });
+    } finally {
+      setReturnsLoading(false);
+    }
+  };
+
+  const handleProcessDailyReturns = async () => {
+    setReturnsProcessing(true);
+    try {
+      const { data, error } = await supabase.rpc('process_daily_returns_now');
+
+      if (error) throw error;
+
+      const response = data as any;
+      if (response?.success) {
+        toast({
+          title: "Success",
+          description: response.message || "Daily returns processed successfully",
+        });
+        fetchInvestmentsData();
+        fetchDeveloperStats();
+      } else {
+        toast({
+          title: "Error",
+          description: response?.error || "Failed to process daily returns",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error processing daily returns:', error);
+      toast({
+        title: "Error",
+        description: "Failed to process daily returns",
+        variant: "destructive",
+      });
+    } finally {
+      setReturnsProcessing(false);
+    }
+  };
+
   const handleCreateRate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCurrencyPair || !newRate || parseFloat(newRate) <= 0) return;
@@ -436,9 +518,10 @@ const DeveloperPanel = () => {
       </div>
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="users">User Management</TabsTrigger>
+          <TabsTrigger value="investments">Investments</TabsTrigger>
           <TabsTrigger value="rates">Exchange Rates</TabsTrigger>
         </TabsList>
 
@@ -723,6 +806,181 @@ const DeveloperPanel = () => {
                                 </DialogContent>
                               </Dialog>
                             </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="investments" className="space-y-6">
+          {/* Process Daily Returns */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <PlayCircle className="w-5 h-5" />
+                Daily Returns Processing
+              </CardTitle>
+              <CardDescription>
+                Manually process 5% daily returns for all active investments
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
+                <div>
+                  <p className="font-medium">Process Today's Returns</p>
+                  <p className="text-sm text-muted-foreground">
+                    This will calculate and add 5% daily returns directly to investor wallets
+                  </p>
+                </div>
+                <Button 
+                  onClick={handleProcessDailyReturns}
+                  disabled={returnsProcessing}
+                  variant="premium"
+                >
+                  {returnsProcessing ? (
+                    <>
+                      <Settings className="w-4 h-4 mr-2 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <PlayCircle className="w-4 h-4 mr-2" />
+                      Process Returns
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Active Investments */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5" />
+                Active Investments ({investmentsData.filter(inv => inv.status === 'active').length})
+              </CardTitle>
+              <CardDescription>
+                Monitor all active investment accounts
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {returnsLoading ? (
+                <div className="flex items-center justify-center p-8">
+                  <Settings className="w-8 h-8 animate-spin text-primary" />
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Investor</TableHead>
+                        <TableHead>Investment Amount</TableHead>
+                        <TableHead>Daily Return</TableHead>
+                        <TableHead>Start Date</TableHead>
+                        <TableHead>End Date</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Total Withdrawn</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {investmentsData.filter(inv => inv.status === 'active').map((investment) => (
+                        <TableRow key={investment.id}>
+                          <TableCell className="font-medium">
+                            {investment.profiles?.full_name || 'N/A'}
+                            <br />
+                            <span className="text-xs text-muted-foreground">
+                              {investment.profiles?.email}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-crypto font-semibold">
+                            {parseFloat(investment.amount).toLocaleString()} CLC
+                          </TableCell>
+                          <TableCell className="text-success font-semibold">
+                            {parseFloat(investment.daily_return || (investment.amount * 0.05)).toLocaleString()} CLC
+                          </TableCell>
+                          <TableCell>
+                            {new Date(investment.start_date).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            {new Date(investment.end_date).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={investment.status === 'active' ? 'default' : 'secondary'}>
+                              {investment.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-warning">
+                            {parseFloat(investment.total_withdrawn || 0).toLocaleString()} CLC
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Today's Processed Returns */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="w-5 h-5" />
+                Today's Processed Returns ({dailyReturnsData.length})
+              </CardTitle>
+              <CardDescription>
+                Returns processed for {new Date().toLocaleDateString()}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {returnsLoading ? (
+                <div className="flex items-center justify-center p-8">
+                  <Settings className="w-8 h-8 animate-spin text-primary" />
+                </div>
+              ) : dailyReturnsData.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No returns processed today yet
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Investor</TableHead>
+                        <TableHead>Investment Amount</TableHead>
+                        <TableHead>Return Amount</TableHead>
+                        <TableHead>Processed At</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {dailyReturnsData.map((returnData) => (
+                        <TableRow key={returnData.id}>
+                          <TableCell className="font-medium">
+                            {returnData.profiles?.full_name || 'N/A'}
+                          </TableCell>
+                          <TableCell className="text-crypto">
+                            {parseFloat(returnData.investments?.amount || 0).toLocaleString()} CLC
+                          </TableCell>
+                          <TableCell className="text-success font-semibold">
+                            {parseFloat(returnData.amount).toLocaleString()} CLC
+                          </TableCell>
+                          <TableCell>
+                            {returnData.withdrawn_at 
+                              ? new Date(returnData.withdrawn_at).toLocaleTimeString()
+                              : 'Pending'
+                            }
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={returnData.withdrawn ? 'default' : 'secondary'}>
+                              {returnData.withdrawn ? 'Added to Wallet' : 'Pending'}
+                            </Badge>
                           </TableCell>
                         </TableRow>
                       ))}
