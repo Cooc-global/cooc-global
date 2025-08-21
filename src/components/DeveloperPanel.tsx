@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Settings, Wallet, TrendingUp, Users, DollarSign, UserPlus, UserX, Ban, CheckCircle, Trash2, TrendingDown, PlayCircle, Calendar } from 'lucide-react';
+import { Settings, Wallet, TrendingUp, Users, DollarSign, UserPlus, UserX, Ban, CheckCircle, Trash2, TrendingDown, PlayCircle, Calendar, ShoppingCart, Edit3 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -37,6 +37,19 @@ interface ExchangeRate {
   active: boolean;
   set_by: string;
   created_at: string;
+}
+
+interface MarketplaceOffer {
+  id: string;
+  user_id: string;
+  seller_name: string;
+  phone_number: string;
+  coins_for_sale: number;
+  price_per_coin: number;
+  description: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
 }
 
 const DeveloperPanel = () => {
@@ -72,11 +85,25 @@ const DeveloperPanel = () => {
   const [investmentsData, setInvestmentsData] = useState<any[]>([]);
   const [returnsLoading, setReturnsLoading] = useState(false);
 
+  // Marketplace state
+  const [marketplaceOffers, setMarketplaceOffers] = useState<MarketplaceOffer[]>([]);
+  const [marketplaceLoading, setMarketplaceLoading] = useState(false);
+  const [editingOffer, setEditingOffer] = useState<MarketplaceOffer | null>(null);
+  const [newOfferForm, setNewOfferForm] = useState({
+    seller_name: '',
+    phone_number: '',
+    coins_for_sale: '',
+    price_per_coin: '1.00',
+    description: 'High-quality CLC coins available for immediate transfer. Verified seller with excellent transaction history.',
+    status: 'active'
+  });
+
   useEffect(() => {
     fetchDeveloperStats();
     fetchAllUsers();
     fetchExchangeRates();
     fetchInvestmentsData();
+    fetchMarketplaceOffers();
   }, []);
 
   const fetchAllUsers = async () => {
@@ -501,6 +528,126 @@ const DeveloperPanel = () => {
     }
   };
 
+  // Marketplace Management Functions
+  const fetchMarketplaceOffers = async () => {
+    setMarketplaceLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('marketplace')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      setMarketplaceOffers(data || []);
+    } catch (error) {
+      console.error('Error fetching marketplace offers:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load marketplace offers",
+        variant: "destructive",
+      });
+    } finally {
+      setMarketplaceLoading(false);
+    }
+  };
+
+  const handleCreateMarketplaceOffer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newOfferForm.seller_name || !newOfferForm.phone_number || !newOfferForm.coins_for_sale) return;
+
+    try {
+      const fakeUserId = crypto.randomUUID();
+      
+      const { error } = await supabase
+        .from('marketplace')
+        .insert({
+          user_id: fakeUserId,
+          seller_name: newOfferForm.seller_name,
+          phone_number: newOfferForm.phone_number,
+          coins_for_sale: parseFloat(newOfferForm.coins_for_sale),
+          price_per_coin: parseFloat(newOfferForm.price_per_coin),
+          description: newOfferForm.description,
+          status: newOfferForm.status
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Fictional marketplace offer created successfully",
+      });
+
+      setNewOfferForm({
+        seller_name: '',
+        phone_number: '',
+        coins_for_sale: '',
+        price_per_coin: '1.00',
+        description: 'High-quality CLC coins available for immediate transfer. Verified seller with excellent transaction history.',
+        status: 'active'
+      });
+      fetchMarketplaceOffers();
+    } catch (error) {
+      console.error('Error creating marketplace offer:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create marketplace offer",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUpdateMarketplaceOffer = async (offerId: string, updatedData: Partial<MarketplaceOffer>) => {
+    try {
+      const { error } = await supabase
+        .from('marketplace')
+        .update(updatedData)
+        .eq('id', offerId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Marketplace offer updated successfully",
+      });
+
+      fetchMarketplaceOffers();
+      setEditingOffer(null);
+    } catch (error) {
+      console.error('Error updating marketplace offer:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update marketplace offer",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteMarketplaceOffer = async (offerId: string) => {
+    try {
+      const { error } = await supabase
+        .from('marketplace')
+        .delete()
+        .eq('id', offerId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Marketplace offer deleted successfully",
+      });
+
+      fetchMarketplaceOffers();
+    } catch (error) {
+      console.error('Error deleting marketplace offer:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete marketplace offer",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -518,11 +665,12 @@ const DeveloperPanel = () => {
       </div>
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="users">User Management</TabsTrigger>
           <TabsTrigger value="investments">Investments</TabsTrigger>
           <TabsTrigger value="rates">Exchange Rates</TabsTrigger>
+          <TabsTrigger value="marketplace">Marketplace</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -1113,6 +1261,268 @@ const DeveloperPanel = () => {
                                 </>
                               )}
                             </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="marketplace" className="space-y-6">
+          {/* Add New Fictional User Form */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ShoppingCart className="w-5 h-5" />
+                Add Fictional Marketplace User
+              </CardTitle>
+              <CardDescription>
+                Create fictional users with Kenyan names and Safaricom numbers to demonstrate marketplace activity
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleCreateMarketplaceOffer} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="sellerName">Seller Name</Label>
+                    <Input
+                      id="sellerName"
+                      type="text"
+                      placeholder="Grace Wanjiku"
+                      value={newOfferForm.seller_name}
+                      onChange={(e) => setNewOfferForm({...newOfferForm, seller_name: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phoneNumber">Safaricom Number</Label>
+                    <Input
+                      id="phoneNumber"
+                      type="text"
+                      placeholder="+254 0700 123456"
+                      value={newOfferForm.phone_number}
+                      onChange={(e) => setNewOfferForm({...newOfferForm, phone_number: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="coinsForSale">Coins for Sale</Label>
+                    <Input
+                      id="coinsForSale"
+                      type="number"
+                      placeholder="1000"
+                      value={newOfferForm.coins_for_sale}
+                      onChange={(e) => setNewOfferForm({...newOfferForm, coins_for_sale: e.target.value})}
+                      min="1"
+                      step="1"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="pricePerCoin">Price per Coin (KSH)</Label>
+                    <Input
+                      id="pricePerCoin"
+                      type="number"
+                      placeholder="1.00"
+                      value={newOfferForm.price_per_coin}
+                      onChange={(e) => setNewOfferForm({...newOfferForm, price_per_coin: e.target.value})}
+                      min="0.01"
+                      step="0.01"
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="status">Status</Label>
+                  <select
+                    id="status"
+                    value={newOfferForm.status}
+                    onChange={(e) => setNewOfferForm({...newOfferForm, status: e.target.value})}
+                    className="w-full px-3 py-2 border rounded-md"
+                  >
+                    <option value="active">Active</option>
+                    <option value="sold">Sold</option>
+                  </select>
+                </div>
+                <Button type="submit" className="w-full">
+                  <ShoppingCart className="w-4 h-4 mr-2" />
+                  Create Fictional User
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+
+          {/* Marketplace Offers Management */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                Marketplace Users ({marketplaceOffers.length})
+              </CardTitle>
+              <CardDescription>
+                Manage all fictional and real marketplace users
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {marketplaceLoading ? (
+                <div className="flex items-center justify-center p-8">
+                  <Settings className="w-8 h-8 animate-spin text-primary" />
+                </div>
+              ) : marketplaceOffers.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No marketplace offers found
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Seller Name</TableHead>
+                        <TableHead>Phone Number</TableHead>
+                        <TableHead>Coins</TableHead>
+                        <TableHead>Price</TableHead>
+                        <TableHead>Total Value</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Created</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {marketplaceOffers.map((offer) => (
+                        <TableRow key={offer.id}>
+                          <TableCell className="font-medium">
+                            {editingOffer?.id === offer.id ? (
+                              <Input
+                                value={editingOffer.seller_name}
+                                onChange={(e) => setEditingOffer({...editingOffer, seller_name: e.target.value})}
+                                className="w-32"
+                              />
+                            ) : (
+                              offer.seller_name
+                            )}
+                          </TableCell>
+                          <TableCell className="font-mono text-xs">
+                            {editingOffer?.id === offer.id ? (
+                              <Input
+                                value={editingOffer.phone_number}
+                                onChange={(e) => setEditingOffer({...editingOffer, phone_number: e.target.value})}
+                                className="w-32"
+                              />
+                            ) : (
+                              offer.phone_number
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {editingOffer?.id === offer.id ? (
+                              <Input
+                                type="number"
+                                value={editingOffer.coins_for_sale.toString()}
+                                onChange={(e) => setEditingOffer({...editingOffer, coins_for_sale: parseFloat(e.target.value) || 0})}
+                                className="w-24"
+                              />
+                            ) : (
+                              `${offer.coins_for_sale.toLocaleString()} CLC`
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {editingOffer?.id === offer.id ? (
+                              <Input
+                                type="number"
+                                step="0.01"
+                                value={editingOffer.price_per_coin.toString()}
+                                onChange={(e) => setEditingOffer({...editingOffer, price_per_coin: parseFloat(e.target.value) || 0})}
+                                className="w-20"
+                              />
+                            ) : (
+                              `${offer.price_per_coin} KSH`
+                            )}
+                          </TableCell>
+                          <TableCell className="text-crypto font-semibold">
+                            {(offer.coins_for_sale * offer.price_per_coin).toLocaleString()} KSH
+                          </TableCell>
+                          <TableCell>
+                            {editingOffer?.id === offer.id ? (
+                              <select
+                                value={editingOffer.status}
+                                onChange={(e) => setEditingOffer({...editingOffer, status: e.target.value})}
+                                className="px-2 py-1 border rounded"
+                              >
+                                <option value="active">Active</option>
+                                <option value="sold">Sold</option>
+                              </select>
+                            ) : (
+                              <Badge variant={offer.status === 'sold' ? 'destructive' : 'default'}>
+                                {offer.status === 'sold' ? 'SOLD' : 'AVAILABLE'}
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {new Date(offer.created_at).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              {editingOffer?.id === offer.id ? (
+                                <>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => handleUpdateMarketplaceOffer(offer.id, editingOffer)}
+                                  >
+                                    <CheckCircle className="w-3 h-3 mr-1" />
+                                    Save
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => setEditingOffer(null)}
+                                  >
+                                    Cancel
+                                  </Button>
+                                </>
+                              ) : (
+                                <>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => setEditingOffer(offer)}
+                                  >
+                                    <Edit3 className="w-3 h-3 mr-1" />
+                                    Edit
+                                  </Button>
+                                  <Dialog>
+                                    <DialogTrigger asChild>
+                                      <Button
+                                        size="sm"
+                                        variant="destructive"
+                                      >
+                                        <Trash2 className="w-3 h-3 mr-1" />
+                                        Delete
+                                      </Button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                      <DialogHeader>
+                                        <DialogTitle>Delete Marketplace Offer</DialogTitle>
+                                        <DialogDescription>
+                                          Are you sure you want to delete {offer.seller_name}'s marketplace offer? This action cannot be undone.
+                                        </DialogDescription>
+                                      </DialogHeader>
+                                      <DialogFooter>
+                                        <Button variant="outline">Cancel</Button>
+                                        <Button 
+                                          variant="destructive"
+                                          onClick={() => handleDeleteMarketplaceOffer(offer.id)}
+                                        >
+                                          Delete Offer
+                                        </Button>
+                                      </DialogFooter>
+                                    </DialogContent>
+                                  </Dialog>
+                                </>
+                              )}
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
