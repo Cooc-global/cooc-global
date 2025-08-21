@@ -40,6 +40,12 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
     fetchOffers(); // Fetch offers regardless of authentication status
   }, [user]);
 
+  // Helper function to hide last 3 digits of phone number
+  const hidePhoneDigits = (phoneNumber: string): string => {
+    if (!phoneNumber || phoneNumber.length < 3) return phoneNumber;
+    return phoneNumber.slice(0, -3) + '***';
+  };
+
   const fetchOffers = async () => {
     try {
       // If user is authenticated, get full data including phone numbers
@@ -304,7 +310,7 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
                       {user && offer.phone_number && (
                         <div className="flex items-center text-sm text-muted-foreground">
                           <Phone className="w-4 h-4 mr-1" />
-                          {offer.phone_number}
+                          {hidePhoneDigits(offer.phone_number)}
                         </div>
                       )}
                       {!user && (
