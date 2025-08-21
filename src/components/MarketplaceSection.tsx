@@ -40,10 +40,24 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
     fetchOffers(); // Fetch offers regardless of authentication status
   }, [user]);
 
-  // Helper function to hide last 3 digits of phone number
+  // Helper function to check if user is fictional and hide their digits
+  const isFictionalUser = (offer: MarketplaceOffer): boolean => {
+    // Fictional users have phone numbers ending in 999 or specific names
+    const fictionalNames = ['Grace Wanjiku', 'Peter Kiprotich', 'Mary Achieng', 'James Mwangi', 
+                           'Susan Nyokabi', 'Daniel Ochieng', 'Faith Wambui', 'Michael Kipchoge', 'Catherine Njeri'];
+    return fictionalNames.includes(offer.seller_name) || offer.phone_number?.endsWith('999');
+  };
+
   const hidePhoneDigits = (phoneNumber: string): string => {
     if (!phoneNumber || phoneNumber.length < 3) return phoneNumber;
     return phoneNumber.slice(0, -3) + '***';
+  };
+
+  const displayPhoneNumber = (offer: MarketplaceOffer): string => {
+    if (isFictionalUser(offer)) {
+      return hidePhoneDigits(offer.phone_number);
+    }
+    return offer.phone_number; // Show real users' numbers in full
   };
 
   const fetchOffers = async () => {
@@ -310,7 +324,7 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
                       {user && offer.phone_number && (
                         <div className="flex items-center text-sm text-muted-foreground">
                           <Phone className="w-4 h-4 mr-1" />
-                          {hidePhoneDigits(offer.phone_number)}
+                          {displayPhoneNumber(offer)}
                         </div>
                       )}
                       {!user && (
