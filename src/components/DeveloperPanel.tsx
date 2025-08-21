@@ -391,32 +391,52 @@ const DeveloperPanel = () => {
   const fetchInvestmentsData = async () => {
     setReturnsLoading(true);
     try {
-      // Get all investments with user details
+      // Get all investments
       const { data: investments, error: investmentsError } = await supabase
         .from('investments')
-        .select(`
-          *,
-          profiles!inner(full_name, email)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (investmentsError) throw investmentsError;
 
+      // Get all profiles to join with investments
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, email');
+
+      if (profilesError) throw profilesError;
+
+      // Create a map of user profiles for easy lookup
+      const profilesMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+
+      // Join investments with profile data
+      const investmentsWithProfiles = investments?.map(investment => ({
+        ...investment,
+        profiles: profilesMap.get(investment.user_id) || { full_name: 'Unknown', email: 'Unknown' }
+      })) || [];
+
       // Get today's daily returns
       const { data: dailyReturns, error: returnsError } = await supabase
         .from('daily_returns')
-        .select(`
-          *,
-          profiles!inner(full_name),
-          investments!inner(amount)
-        `)
+        .select('*')
         .eq('return_date', new Date().toISOString().split('T')[0])
         .order('created_at', { ascending: false });
 
       if (returnsError) throw returnsError;
 
-      setInvestmentsData(investments || []);
-      setDailyReturnsData(dailyReturns || []);
+      // Join daily returns with profile and investment data
+      const dailyReturnsWithProfiles = dailyReturns?.map(dailyReturn => {
+        const profile = profilesMap.get(dailyReturn.user_id) || { full_name: 'Unknown' };
+        const investment = investments?.find(inv => inv.id === dailyReturn.investment_id);
+        return {
+          ...dailyReturn,
+          profiles: profile,
+          investments: { amount: investment?.amount || 0 }
+        };
+      }) || [];
+
+      setInvestmentsData(investmentsWithProfiles);
+      setDailyReturnsData(dailyReturnsWithProfiles);
     } catch (error) {
       console.error('Error fetching investments data:', error);
       toast({
