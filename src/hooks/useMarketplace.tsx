@@ -16,6 +16,7 @@ export interface MarketplaceOffer {
   payment_methods?: PaymentMethod[];
   coins_for_sale: number;
   price_per_coin: number;
+  currency: string;
   created_at: string;
   user_id: string;
   status: string;
@@ -24,6 +25,7 @@ export interface MarketplaceOffer {
 export interface MarketplaceFormData {
   coinsToSell: string;
   pricePerCoin: string;
+  currency: string;
   phoneNumber: string;
   paymentMethods: PaymentMethod[];
 }
@@ -89,7 +91,7 @@ export const useMarketplace = () => {
         
         const { data: soldData, error: soldError } = await supabase
           .from('marketplace')
-          .select('id, user_id, seller_name, coins_for_sale, price_per_coin, description, status, created_at, updated_at, payment_methods')
+          .select('id, user_id, seller_name, coins_for_sale, price_per_coin, currency, description, status, created_at, updated_at, payment_methods')
           .eq('status', 'sold')
           .order('created_at', { ascending: false });
 
@@ -100,11 +102,13 @@ export const useMarketplace = () => {
           ...(activeData || []).map(offer => ({ 
             ...offer, 
             phone_number: '', 
+            currency: offer.currency || 'KSH',
             payment_methods: Array.isArray(offer.payment_methods) ? (offer.payment_methods as unknown) as PaymentMethod[] : []
           })),
           ...(soldData || []).map(offer => ({ 
             ...offer, 
             phone_number: '', 
+            currency: offer.currency || 'KSH',
             payment_methods: Array.isArray(offer.payment_methods) ? (offer.payment_methods as unknown) as PaymentMethod[] : []
           }))
         ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
@@ -121,7 +125,7 @@ export const useMarketplace = () => {
     profile: { full_name: string } | null,
     walletBalance: number
   ) => {
-    const { coinsToSell, pricePerCoin, phoneNumber, paymentMethods } = formData;
+    const { coinsToSell, pricePerCoin, phoneNumber, paymentMethods, currency } = formData;
 
     if (!coinsToSell || !pricePerCoin || (paymentMethods.length === 0 && !phoneNumber)) {
       toast({
@@ -182,7 +186,8 @@ export const useMarketplace = () => {
           phone_number: phoneNumber || '',
           payment_methods: allPaymentMethods as any, // Cast to any to handle Json type
           coins_for_sale: coinsAmount,
-          price_per_coin: priceAmount
+          price_per_coin: priceAmount,
+          currency: currency
         });
 
       if (error) throw error;

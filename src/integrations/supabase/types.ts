@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      currency_rates: {
+        Row: {
+          active: boolean
+          created_at: string
+          from_currency: string
+          id: string
+          rate: number
+          set_by: string
+          to_currency: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          from_currency: string
+          id?: string
+          rate: number
+          set_by: string
+          to_currency: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          from_currency?: string
+          id?: string
+          rate?: number
+          set_by?: string
+          to_currency?: string
+        }
+        Relationships: []
+      }
       daily_returns: {
         Row: {
           amount: number
@@ -122,6 +152,7 @@ export type Database = {
         Row: {
           coins_for_sale: number
           created_at: string
+          currency: string
           description: string | null
           id: string
           payment_methods: Json | null
@@ -135,6 +166,7 @@ export type Database = {
         Insert: {
           coins_for_sale: number
           created_at?: string
+          currency?: string
           description?: string | null
           id?: string
           payment_methods?: Json | null
@@ -148,6 +180,7 @@ export type Database = {
         Update: {
           coins_for_sale?: number
           created_at?: string
+          currency?: string
           description?: string | null
           id?: string
           payment_methods?: Json | null
@@ -301,6 +334,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      convert_currency: {
+        Args: { amount: number; from_curr: string; to_curr: string }
+        Returns: number
+      }
       create_new_user: {
         Args: {
           full_name?: string
@@ -313,6 +350,10 @@ export type Database = {
       delete_user_completely: {
         Args: { target_user_id: string }
         Returns: boolean
+      }
+      get_currency_rate: {
+        Args: { from_curr: string; to_curr: string }
+        Returns: number
       }
       get_current_clc_price: {
         Args: Record<PropertyKey, never>

@@ -53,6 +53,7 @@ const MarketplacePanel = ({ wallet, profile }: MarketplacePanelProps) => {
       coinsToSell,
       pricePerCoin,
       phoneNumber,
+      currency: 'KSH',
       paymentMethods: []
     };
 

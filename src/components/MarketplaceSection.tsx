@@ -3,8 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
 import { useCLCPrice } from '@/hooks/useCLCPrice';
+import { useCurrency } from '@/hooks/useCurrency';
 import { ShoppingCart, Phone, Plus, Trash2, CreditCard, Building2, Wallet, Smartphone } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useMarketplace, MarketplaceFormData, PaymentMethod } from '@/hooks/useMarketplace';
@@ -19,6 +21,7 @@ interface MarketplaceSectionProps {
 const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
   const { user } = useAuth();
   const { priceData: clcPrice } = useCLCPrice();
+  const { formatCurrency, convertCurrency, supportedCurrencies } = useCurrency();
   const { toast } = useToast();
   const {
     offers,
@@ -35,6 +38,7 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
   // Form state - initialize with current CLC price
   const [coinsToSell, setCoinsToSell] = useState('');
   const [pricePerCoin, setPricePerCoin] = useState(clcPrice.price.toString());
+  const [selectedCurrency, setSelectedCurrency] = useState('KSH');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
 
@@ -42,11 +46,14 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
   const handleCreateOffer = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Convert minimum price to selected currency
+    const minPriceInSelectedCurrency = convertCurrency(10, 'KSH', selectedCurrency);
     const priceValue = parseFloat(pricePerCoin);
-    if (priceValue < 10) {
+    
+    if (priceValue < minPriceInSelectedCurrency) {
       toast({
         title: "Price Too Low", 
-        description: "Minimum price per CLC is KSH 10.00",
+        description: `Minimum price per CLC is ${formatCurrency(minPriceInSelectedCurrency, selectedCurrency)}`,
         variant: "destructive",
       });
       return;
@@ -55,6 +62,7 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
     const formData: MarketplaceFormData = {
       coinsToSell,
       pricePerCoin,
+      currency: selectedCurrency,
       phoneNumber,
       paymentMethods
     };
@@ -65,6 +73,7 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
       // Reset form
       setCoinsToSell('');
       setPricePerCoin(clcPrice.price.toString());
+      setSelectedCurrency('KSH');
       setPhoneNumber('');
       setPaymentMethods([]);
       setShowForm(false);
@@ -131,18 +140,36 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
                 </div>
                 
                 <div>
-                  <Label htmlFor="pricePerCoin" className="text-xs">Price (KSH) - Min: KSH 10.00</Label>
-                  <Input
-                    id="pricePerCoin"
-                    type="number"
-                    step="0.01"
-                    min="10.00"
-                    placeholder={`Current: KSH ${clcPrice.price.toFixed(2)}`}
-                    value={pricePerCoin}
-                    onChange={(e) => setPricePerCoin(e.target.value)}
-                    className="h-8 text-sm"
-                    required
-                  />
+                  <Label htmlFor="pricePerCoin" className="text-xs">
+                    Price ({selectedCurrency}) - Min: {formatCurrency(convertCurrency(10, 'KSH', selectedCurrency), selectedCurrency)}
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="pricePerCoin"
+                      type="number"
+                      step="0.01"
+                      placeholder={`Current: ${formatCurrency(convertCurrency(clcPrice.price, 'KSH', selectedCurrency), selectedCurrency)}`}
+                      value={pricePerCoin}
+                      onChange={(e) => setPricePerCoin(e.target.value)}
+                      className="h-8 text-sm flex-1"
+                      required
+                    />
+                    <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
+                      <SelectTrigger className="h-8 w-20 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border shadow-lg">
+                        {supportedCurrencies.map((currency) => (
+                          <SelectItem key={currency.code} value={currency.code}>
+                            <div className="flex items-center gap-1">
+                              <span>{currency.flag}</span>
+                              <span>{currency.code}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
 
@@ -156,8 +183,8 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
               <div className="flex items-center justify-between">
                 <div className="text-xs text-muted-foreground">
                   Total: {coinsToSell && pricePerCoin ? 
-                    `${(parseFloat(coinsToSell || '0') * parseFloat(pricePerCoin || '0')).toLocaleString()} KSH` 
-                    : '0 KSH'}
+                    `${formatCurrency(parseFloat(coinsToSell || '0') * parseFloat(pricePerCoin || '0'), selectedCurrency)}` 
+                    : formatCurrency(0, selectedCurrency)}
                 </div>
                 <Button type="submit" className="h-8 px-4 text-xs" disabled={loading}>
                   {loading ? 'Posting...' : 'Post Offer'}
@@ -241,20 +268,20 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
                     </div>
                   )}
                   
-                  <div className="grid grid-cols-3 gap-2 text-xs">
-                    <div>
-                      <span className="text-muted-foreground block">Coins</span>
-                      <div className="font-medium">{offer.coins_for_sale.toLocaleString()}</div>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground block">Price</span>
-                      <div className="font-medium">{offer.price_per_coin} KSH</div>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground block">Total</span>
-                      <div className="font-medium">{(offer.coins_for_sale * offer.price_per_coin).toLocaleString()} KSH</div>
-                    </div>
-                  </div>
+                   <div className="grid grid-cols-3 gap-2 text-xs">
+                     <div>
+                       <span className="text-muted-foreground block">Coins</span>
+                       <div className="font-medium">{offer.coins_for_sale.toLocaleString()}</div>
+                     </div>
+                     <div>
+                       <span className="text-muted-foreground block">Price</span>
+                       <div className="font-medium">{formatCurrency(offer.price_per_coin, offer.currency)}</div>
+                     </div>
+                     <div>
+                       <span className="text-muted-foreground block">Total</span>
+                       <div className="font-medium">{formatCurrency(offer.coins_for_sale * offer.price_per_coin, offer.currency)}</div>
+                     </div>
+                   </div>
 
                 </div>
               ))}
