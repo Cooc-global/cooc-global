@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Coins, TrendingUp, Wallet, History, LogOut, Settings, Users } from 'lucide-react';
+import { Coins, TrendingUp, Wallet, History, LogOut, Settings, Users, ShoppingCart } from 'lucide-react';
 import WalletSection from '@/components/WalletSection';
 import InvestmentSection from '@/components/InvestmentSection';
 import TransactionHistory from '@/components/TransactionHistory';
@@ -187,7 +187,7 @@ const Dashboard = () => {
         {/* Professional Navigation */}
         <Tabs defaultValue="wallet" className="space-y-6">
           <div className="flex items-center justify-between mb-6">
-            <TabsList className={`inline-flex h-10 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground ${profile?.role === 'developer' ? 'grid-cols-5' : 'grid-cols-4'}`}>
+            <TabsList className={`inline-flex h-10 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground ${profile?.role === 'developer' ? 'grid-cols-6' : 'grid-cols-5'}`}>
               <TabsTrigger value="wallet" className="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium">
                 <Wallet className="w-4 h-4 mr-2" />
                 Wallet
@@ -195,6 +195,10 @@ const Dashboard = () => {
               <TabsTrigger value="invest" className="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium">
                 <TrendingUp className="w-4 h-4 mr-2" />
                 Invest
+              </TabsTrigger>
+              <TabsTrigger value="marketplace" className="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium">
+                <ShoppingCart className="w-4 h-4 mr-2" />
+                Market
               </TabsTrigger>
               <TabsTrigger value="referrals" className="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium">
                 <Users className="w-4 h-4 mr-2" />
@@ -230,7 +234,6 @@ const Dashboard = () => {
                 <WalletSection wallet={wallet} profile={profile} onWalletUpdate={fetchUserData} />
               </div>
               <div className="xl:col-span-1 space-y-4">
-                <MarketplacePanel wallet={wallet} profile={profile} />
                 <CurrencyConverter />
               </div>
             </div>
@@ -238,6 +241,17 @@ const Dashboard = () => {
 
           <TabsContent value="invest" className="mt-0">
             <InvestmentSection wallet={wallet} onInvestmentUpdate={fetchUserData} />
+          </TabsContent>
+
+          <TabsContent value="marketplace" className="mt-0">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <MarketplacePanel wallet={wallet} profile={profile} />
+              </div>
+              <div className="lg:col-span-1">
+                <CurrencyConverter />
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="referrals" className="mt-0">
