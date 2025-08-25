@@ -3,10 +3,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
+import { useCLCPrice } from '@/hooks/useCLCPrice';
 import { ShoppingCart, Plus, Trash2, ChevronDown, ChevronUp, Phone } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useMarketplace, MarketplaceFormData } from '@/hooks/useMarketplace';
+import { useToast } from '@/hooks/use-toast';
 
 interface MarketplacePanelProps {
   wallet: { balance: number; locked_balance: number } | null;
@@ -15,6 +17,8 @@ interface MarketplacePanelProps {
 
 const MarketplacePanel = ({ wallet, profile }: MarketplacePanelProps) => {
   const { user } = useAuth();
+  const { priceData: clcPrice } = useCLCPrice();
+  const { toast } = useToast();
   const {
     activeOffers,
     recentSales,
@@ -27,13 +31,23 @@ const MarketplacePanel = ({ wallet, profile }: MarketplacePanelProps) => {
   const [showForm, setShowForm] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   
-  // Form state
+  // Form state - initialize with current CLC price
   const [coinsToSell, setCoinsToSell] = useState('');
-  const [pricePerCoin, setPricePerCoin] = useState('1.00');
+  const [pricePerCoin, setPricePerCoin] = useState(clcPrice.price.toString());
   const [phoneNumber, setPhoneNumber] = useState('');
 
   const handleCreateOffer = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const priceValue = parseFloat(pricePerCoin);
+    if (priceValue < 10) {
+      toast({
+        title: "Price Too Low",
+        description: "Minimum price per CLC is KSH 10.00",
+        variant: "destructive",
+      });
+      return;
+    }
     
     const formData: MarketplaceFormData = {
       coinsToSell,
@@ -45,7 +59,7 @@ const MarketplacePanel = ({ wallet, profile }: MarketplacePanelProps) => {
     
     if (success) {
       setCoinsToSell('');
-      setPricePerCoin('1.00');
+      setPricePerCoin(clcPrice.price.toString());
       setPhoneNumber('');
       setShowForm(false);
     }
@@ -92,7 +106,9 @@ const MarketplacePanel = ({ wallet, profile }: MarketplacePanelProps) => {
                 />
                 <Input
                   type="number"
-                  placeholder="Price"
+                  step="0.01"
+                  min="10.00"
+                  placeholder={`KSH (Min: 10.00, Current: ${clcPrice.price.toFixed(2)})`}
                   value={pricePerCoin}
                   onChange={(e) => setPricePerCoin(e.target.value)}
                   className="h-5 text-xs flex-1"
@@ -167,8 +183,8 @@ const MarketplacePanel = ({ wallet, profile }: MarketplacePanelProps) => {
                 
                 <div className="flex justify-between text-xs">
                   <span>{activeOffers[0].coins_for_sale.toLocaleString()}</span>
-                  <span>@{activeOffers[0].price_per_coin}</span>
-                  <span>{(activeOffers[0].coins_for_sale * activeOffers[0].price_per_coin).toLocaleString()}</span>
+                  <span>KSH {activeOffers[0].price_per_coin}</span>
+                  <span>KSH {(activeOffers[0].coins_for_sale * activeOffers[0].price_per_coin).toLocaleString()}</span>
                 </div>
               </div>
               
@@ -198,8 +214,8 @@ const MarketplacePanel = ({ wallet, profile }: MarketplacePanelProps) => {
                         </div>
                         <div className="flex justify-between text-xs">
                           <span>{offer.coins_for_sale.toLocaleString()}</span>
-                          <span>@{offer.price_per_coin}</span>
-                          <span>{(offer.coins_for_sale * offer.price_per_coin).toLocaleString()}</span>
+                          <span>KSH {offer.price_per_coin}</span>
+                          <span>KSH {(offer.coins_for_sale * offer.price_per_coin).toLocaleString()}</span>
                         </div>
                       </div>
                     ))}
@@ -229,7 +245,7 @@ const MarketplacePanel = ({ wallet, profile }: MarketplacePanelProps) => {
               <div className="flex justify-between">
                 <span className="truncate max-w-[60px]">{recentSales[0].seller_name}</span>
                 <span>{recentSales[0].coins_for_sale.toLocaleString()}</span>
-                <span>@{recentSales[0].price_per_coin}</span>
+                <span>KSH {recentSales[0].price_per_coin}</span>
               </div>
             </div>
           </div>

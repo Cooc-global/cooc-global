@@ -4,9 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
+import { useCLCPrice } from '@/hooks/useCLCPrice';
 import { ShoppingCart, Phone, Plus, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useMarketplace, MarketplaceFormData } from '@/hooks/useMarketplace';
+import { useToast } from '@/hooks/use-toast';
 
 interface MarketplaceSectionProps {
   wallet: { balance: number; locked_balance: number } | null;
@@ -15,6 +17,8 @@ interface MarketplaceSectionProps {
 
 const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
   const { user } = useAuth();
+  const { priceData: clcPrice } = useCLCPrice();
+  const { toast } = useToast();
   const {
     offers,
     activeOffers,
@@ -27,14 +31,24 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
   
   const [showForm, setShowForm] = useState(false);
   
-  // Form state
+  // Form state - initialize with current CLC price
   const [coinsToSell, setCoinsToSell] = useState('');
-  const [pricePerCoin, setPricePerCoin] = useState('1.00');
+  const [pricePerCoin, setPricePerCoin] = useState(clcPrice.price.toString());
   const [phoneNumber, setPhoneNumber] = useState('');
 
 
   const handleCreateOffer = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const priceValue = parseFloat(pricePerCoin);
+    if (priceValue < 10) {
+      toast({
+        title: "Price Too Low", 
+        description: "Minimum price per CLC is KSH 10.00",
+        variant: "destructive",
+      });
+      return;
+    }
     
     const formData: MarketplaceFormData = {
       coinsToSell,
@@ -47,7 +61,7 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
     if (success) {
       // Reset form
       setCoinsToSell('');
-      setPricePerCoin('1.00');
+      setPricePerCoin(clcPrice.price.toString());
       setPhoneNumber('');
       setShowForm(false);
     }
@@ -101,11 +115,13 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
                 </div>
                 
                 <div>
-                  <Label htmlFor="pricePerCoin" className="text-xs">Price (KSH)</Label>
+                  <Label htmlFor="pricePerCoin" className="text-xs">Price (KSH) - Min: KSH 10.00</Label>
                   <Input
                     id="pricePerCoin"
                     type="number"
-                    placeholder="1.00"
+                    step="0.01"
+                    min="10.00"
+                    placeholder={`Current: KSH ${clcPrice.price.toFixed(2)}`}
                     value={pricePerCoin}
                     onChange={(e) => setPricePerCoin(e.target.value)}
                     className="h-8 text-sm"

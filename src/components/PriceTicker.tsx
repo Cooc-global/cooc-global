@@ -1,26 +1,40 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { TrendingUp, TrendingDown } from 'lucide-react';
+import { useCLCPrice } from '@/hooks/useCLCPrice';
 
 interface TickerData {
   symbol: string;
   price: number;
   change: number;
   changePercent: number;
+  currency?: string;
 }
 
 const PriceTicker = () => {
-  const [tickerData, setTickerData] = useState<TickerData[]>([
-    { symbol: 'CLC', price: 0.85, change: 0.05, changePercent: 6.25 },
-    { symbol: 'BTC', price: 67420.50, change: -1250.30, changePercent: -1.82 },
-    { symbol: 'ETH', price: 3845.75, change: 125.40, changePercent: 3.37 },
-    { symbol: 'BNB', price: 542.30, change: 18.90, changePercent: 3.61 },
+  const { priceData: clcPrice, loading } = useCLCPrice();
+  const [otherCoins, setOtherCoins] = useState<TickerData[]>([
+    { symbol: 'BTC', price: 67420.50, change: -1250.30, changePercent: -1.82, currency: 'USD' },
+    { symbol: 'ETH', price: 3845.75, change: 125.40, changePercent: 3.37, currency: 'USD' },
+    { symbol: 'BNB', price: 542.30, change: 18.90, changePercent: 3.61, currency: 'USD' },
   ]);
 
+  // Update CLC price with real data
+  const clcData: TickerData = {
+    symbol: 'CLC',
+    price: clcPrice.price,
+    change: clcPrice.change,
+    changePercent: clcPrice.changePercent,
+    currency: 'KSH'
+  };
+
+  const tickerData = [clcData, ...otherCoins];
+
   useEffect(() => {
+    // Only simulate price changes for other coins, not CLC
     const interval = setInterval(() => {
-      setTickerData(prev => prev.map(item => {
-        const randomChange = (Math.random() - 0.5) * 0.02; // Random change between -1% to +1%
+      setOtherCoins(prev => prev.map(item => {
+        const randomChange = (Math.random() - 0.5) * 0.02;
         const newPrice = item.price * (1 + randomChange);
         const change = newPrice - item.price;
         const changePercent = (change / item.price) * 100;
@@ -47,9 +61,9 @@ const PriceTicker = () => {
                 {item.symbol}
               </div>
               <div className="text-sm font-bold">
-                ${item.price.toLocaleString(undefined, { 
-                  minimumFractionDigits: item.symbol === 'CLC' ? 4 : 2,
-                  maximumFractionDigits: item.symbol === 'CLC' ? 4 : 2
+                {item.currency === 'KSH' ? 'KSH ' : '$'}{item.price.toLocaleString(undefined, { 
+                  minimumFractionDigits: item.symbol === 'CLC' ? 2 : 2,
+                  maximumFractionDigits: item.symbol === 'CLC' ? 2 : 2
                 })}
               </div>
               <div className={`flex items-center text-xs ${
