@@ -12,7 +12,7 @@ import TransactionHistory from '@/components/TransactionHistory';
 import DeveloperPanel from '@/components/DeveloperPanel';
 import ReferralSection from '@/components/ReferralSection';
 import PriceTicker from '@/components/PriceTicker';
-import MarketplacePanel from '@/components/MarketplacePanel';
+import MarketplaceSection from '@/components/MarketplaceSection';
 import { AnnouncementDialog } from '@/components/AnnouncementDialog';
 import { AnnouncementsList } from '@/components/AnnouncementsList';
 import CurrencyConverter from '@/components/CurrencyConverter';
@@ -263,7 +263,7 @@ const Dashboard = () => {
           <TabsContent value="marketplace" className="mt-0">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2">
-                <MarketplacePanel wallet={wallet} profile={profile} />
+                <MarketplaceSection wallet={wallet} profile={profile} />
               </div>
               <div className="lg:col-span-1">
                 <CurrencyConverter />
