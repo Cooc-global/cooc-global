@@ -13,26 +13,42 @@ interface TickerData {
 
 const PriceTicker = () => {
   const { priceData: clcPrice, loading } = useCLCPrice();
+  const [clcDisplayPrice, setClcDisplayPrice] = useState(clcPrice.price);
   const [otherCoins, setOtherCoins] = useState<TickerData[]>([
     { symbol: 'BTC', price: 67420.50, change: -1250.30, changePercent: -1.82, currency: 'USD' },
     { symbol: 'ETH', price: 3845.75, change: 125.40, changePercent: 3.37, currency: 'USD' },
     { symbol: 'BNB', price: 542.30, change: 18.90, changePercent: 3.61, currency: 'USD' },
   ]);
 
-  // Update CLC price with real data
+  // Update CLC display price with attractive fluctuations
   const clcData: TickerData = {
     symbol: 'CLC',
-    price: clcPrice.price,
-    change: clcPrice.change,
-    changePercent: clcPrice.changePercent,
+    price: clcDisplayPrice,
+    change: clcDisplayPrice - clcPrice.price,
+    changePercent: ((clcDisplayPrice - clcPrice.price) / clcPrice.price) * 100,
     currency: 'KSH'
   };
 
   const tickerData = [clcData, ...otherCoins];
 
   useEffect(() => {
-    // Only simulate price changes for other coins, not CLC
+    // Update display price when real CLC price changes
+    setClcDisplayPrice(clcPrice.price);
+  }, [clcPrice.price]);
+
+  useEffect(() => {
+    // Add attractive fluctuations to CLC price and simulate changes for other coins
     const interval = setInterval(() => {
+      // Update CLC with small attractive fluctuations (±0.5% to ±2%)
+      setClcDisplayPrice(prev => {
+        const basePrice = clcPrice.price;
+        const fluctuation = (Math.random() - 0.5) * 0.04; // ±2% max
+        const minFluctuation = Math.sign(fluctuation) * 0.005; // ±0.5% min
+        const finalFluctuation = Math.abs(fluctuation) < 0.005 ? minFluctuation : fluctuation;
+        return basePrice * (1 + finalFluctuation);
+      });
+
+      // Update other coins
       setOtherCoins(prev => prev.map(item => {
         const randomChange = (Math.random() - 0.5) * 0.02;
         const newPrice = item.price * (1 + randomChange);
@@ -49,7 +65,7 @@ const PriceTicker = () => {
     }, 3000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [clcPrice.price]);
 
   return (
     <Card className="mb-6 bg-card/50 backdrop-blur-sm border-border/50">
