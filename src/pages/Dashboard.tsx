@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Coins, TrendingUp, Wallet, History, LogOut, Settings, Users, ShoppingCart } from 'lucide-react';
+import { Coins, TrendingUp, Wallet, History, LogOut, Settings, Users, ShoppingCart, MessageSquare } from 'lucide-react';
 import WalletSection from '@/components/WalletSection';
 import InvestmentSection from '@/components/InvestmentSection';
 import TransactionHistory from '@/components/TransactionHistory';
@@ -13,6 +13,8 @@ import DeveloperPanel from '@/components/DeveloperPanel';
 import ReferralSection from '@/components/ReferralSection';
 import PriceTicker from '@/components/PriceTicker';
 import MarketplacePanel from '@/components/MarketplacePanel';
+import { AnnouncementDialog } from '@/components/AnnouncementDialog';
+import { AnnouncementsList } from '@/components/AnnouncementsList';
 import CurrencyConverter from '@/components/CurrencyConverter';
 
 interface Profile {
@@ -142,6 +144,9 @@ const Dashboard = () => {
                 <p className="text-sm font-medium">{profile?.full_name}</p>
               </div>
               <div className="flex items-center space-x-2">
+                {profile?.role === 'developer' && (
+                  <AnnouncementDialog userRole={profile?.role} />
+                )}
                 <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-md font-medium">
                   {profile?.role === 'developer' ? 'Developer' : 'Investor'}
                 </span>
@@ -187,7 +192,7 @@ const Dashboard = () => {
         {/* Professional Navigation */}
         <Tabs defaultValue="wallet" className="space-y-6">
           <div className="flex items-center justify-between mb-6">
-            <TabsList className={`inline-flex h-10 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground ${profile?.role === 'developer' ? 'grid-cols-6' : 'grid-cols-5'}`}>
+            <TabsList className={`inline-flex h-10 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground ${profile?.role === 'developer' ? 'grid-cols-7' : 'grid-cols-6'}`}>
               <TabsTrigger value="wallet" className="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium">
                 <Wallet className="w-4 h-4 mr-2" />
                 Wallet
@@ -203,6 +208,10 @@ const Dashboard = () => {
               <TabsTrigger value="referrals" className="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium">
                 <Users className="w-4 h-4 mr-2" />
                 Referrals
+              </TabsTrigger>
+              <TabsTrigger value="messages" className="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium">
+                <MessageSquare className="w-4 h-4 mr-2" />
+                Messages
               </TabsTrigger>
               <TabsTrigger value="history" className="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium">
                 <History className="w-4 h-4 mr-2" />
@@ -256,6 +265,12 @@ const Dashboard = () => {
 
           <TabsContent value="referrals" className="mt-0">
             <ReferralSection />
+          </TabsContent>
+
+          <TabsContent value="messages" className="mt-0">
+            <div className="max-w-4xl mx-auto">
+              <AnnouncementsList userId={user?.id} userRole={profile?.role} />
+            </div>
           </TabsContent>
 
           <TabsContent value="history" className="mt-0">
