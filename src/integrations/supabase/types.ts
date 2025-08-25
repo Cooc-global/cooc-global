@@ -124,6 +124,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          payment_methods: Json | null
           phone_number: string
           price_per_coin: number
           seller_name: string
@@ -136,6 +137,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          payment_methods?: Json | null
           phone_number: string
           price_per_coin?: number
           seller_name: string
@@ -148,6 +150,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          payment_methods?: Json | null
           phone_number?: string
           price_per_coin?: number
           seller_name?: string

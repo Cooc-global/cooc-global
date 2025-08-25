@@ -3,10 +3,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
+export interface PaymentMethod {
+  type: 'phone' | 'bank' | 'paypal' | 'crypto' | 'mobile_money';
+  details: string;
+  label: string;
+}
+
 export interface MarketplaceOffer {
   id: string;
   seller_name: string;
   phone_number: string;
+  payment_methods?: PaymentMethod[];
   coins_for_sale: number;
   price_per_coin: number;
   created_at: string;
@@ -18,6 +25,7 @@ export interface MarketplaceFormData {
   coinsToSell: string;
   pricePerCoin: string;
   phoneNumber: string;
+  paymentMethods: PaymentMethod[];
 }
 
 export const useMarketplace = () => {
@@ -69,14 +77,19 @@ export const useMarketplace = () => {
           .order('created_at', { ascending: false });
 
         if (error) throw error;
-        setOffers(data || []);
+        // Convert payment_methods from Json to PaymentMethod[]
+        const processedOffers = (data || []).map(offer => ({
+          ...offer,
+          payment_methods: Array.isArray(offer.payment_methods) ? (offer.payment_methods as unknown) as PaymentMethod[] : []
+        }));
+        setOffers(processedOffers);
       } else {
         const { data: activeData, error: activeError } = await supabase
           .rpc('get_marketplace_offers_public');
         
         const { data: soldData, error: soldError } = await supabase
           .from('marketplace')
-          .select('id, user_id, seller_name, coins_for_sale, price_per_coin, description, status, created_at, updated_at')
+          .select('id, user_id, seller_name, coins_for_sale, price_per_coin, description, status, created_at, updated_at, payment_methods')
           .eq('status', 'sold')
           .order('created_at', { ascending: false });
 
@@ -84,8 +97,16 @@ export const useMarketplace = () => {
         if (soldError) throw soldError;
 
         const allOffers = [
-          ...(activeData || []).map(offer => ({ ...offer, phone_number: '' })),
-          ...(soldData || []).map(offer => ({ ...offer, phone_number: '' }))
+          ...(activeData || []).map(offer => ({ 
+            ...offer, 
+            phone_number: '', 
+            payment_methods: Array.isArray(offer.payment_methods) ? (offer.payment_methods as unknown) as PaymentMethod[] : []
+          })),
+          ...(soldData || []).map(offer => ({ 
+            ...offer, 
+            phone_number: '', 
+            payment_methods: Array.isArray(offer.payment_methods) ? (offer.payment_methods as unknown) as PaymentMethod[] : []
+          }))
         ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         
         setOffers(allOffers);
@@ -100,18 +121,18 @@ export const useMarketplace = () => {
     profile: { full_name: string } | null,
     walletBalance: number
   ) => {
-    const { coinsToSell, pricePerCoin, phoneNumber } = formData;
+    const { coinsToSell, pricePerCoin, phoneNumber, paymentMethods } = formData;
 
-    if (!coinsToSell || !phoneNumber || !pricePerCoin) {
+    if (!coinsToSell || !pricePerCoin || (paymentMethods.length === 0 && !phoneNumber)) {
       toast({
         title: "Error",
-        description: "Please fill in all required fields",
+        description: "Please fill in all required fields and at least one payment method",
         variant: "destructive",
       });
       return false;
     }
 
-    if (!validatePhoneNumber(phoneNumber)) {
+    if (phoneNumber && !validatePhoneNumber(phoneNumber)) {
       toast({
         title: "Error",
         description: "Please enter a valid phone number (10-15 digits)",
@@ -143,12 +164,23 @@ export const useMarketplace = () => {
 
     setLoading(true);
     try {
+      // Add phone number as payment method if provided
+      const allPaymentMethods = [...paymentMethods];
+      if (phoneNumber && phoneNumber.trim()) {
+        allPaymentMethods.push({
+          type: 'phone',
+          details: phoneNumber,
+          label: 'Phone/M-Pesa'
+        });
+      }
+
       const { error } = await supabase
         .from('marketplace')
         .insert({
           user_id: user?.id,
           seller_name: profile?.full_name || 'Anonymous',
-          phone_number: phoneNumber,
+          phone_number: phoneNumber || '',
+          payment_methods: allPaymentMethods as any, // Cast to any to handle Json type
           coins_for_sale: coinsAmount,
           price_per_coin: priceAmount
         });
