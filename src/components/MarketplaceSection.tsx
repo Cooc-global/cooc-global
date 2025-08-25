@@ -251,7 +251,13 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
                       {/* Additional Payment Methods */}
                       {offer.payment_methods && offer.payment_methods.length > 0 && (
                         <div className="space-y-1">
-                          {offer.payment_methods.map((method, index) => (
+                          {offer.payment_methods
+                            .filter((method) => 
+                              method.type !== 'phone' && 
+                              !method.label?.toLowerCase().includes('mpesa') &&
+                              !method.label?.toLowerCase().includes('m-pesa')
+                            )
+                            .map((method, index) => (
                             <div key={index} className="flex items-center text-xs text-muted-foreground">
                               {getPaymentMethodIcon(method.type)}
                               <span className="ml-1">{method.label}:</span>
