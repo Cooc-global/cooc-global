@@ -53,7 +53,7 @@ export const useMarketplace = () => {
   };
 
   const displayPhoneNumber = (offer: MarketplaceOffer): string => {
-    if (isFictionalUser(offer) && offer.status === 'sold') {
+    if (offer.status === 'sold') {
       return hidePhoneDigits(offer.phone_number);
     }
     return offer.phone_number;
