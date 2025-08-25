@@ -4,7 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { Bell, Clock, User } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { Bell, Clock, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface Announcement {
@@ -24,6 +25,7 @@ interface AnnouncementsListProps {
 export const AnnouncementsList = ({ userId, userRole }: AnnouncementsListProps) => {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchAnnouncements();
@@ -82,6 +84,35 @@ export const AnnouncementsList = ({ userId, userRole }: AnnouncementsListProps) 
     if (userRole === 'developer') return true;
     const readBy = Array.isArray(announcement.read_by) ? announcement.read_by : [];
     return readBy.includes(userId || '') || false;
+  };
+
+  const deleteAnnouncement = async (announcementId: string) => {
+    if (userRole !== 'developer') return;
+
+    try {
+      const { error } = await supabase
+        .from('announcements')
+        .delete()
+        .eq('id', announcementId);
+
+      if (error) throw error;
+
+      // Update local state
+      setAnnouncements(prev => prev.filter(a => a.id !== announcementId));
+
+      toast({
+        title: "Success",
+        description: "Announcement deleted successfully",
+        variant: "default"
+      });
+    } catch (error) {
+      console.error('Error deleting announcement:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete announcement. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const unreadCount = announcements.filter(a => !isRead(a)).length;
@@ -146,11 +177,23 @@ export const AnnouncementsList = ({ userId, userRole }: AnnouncementsListProps) 
                     <h4 className="font-semibold text-sm">
                       {announcement.title}
                     </h4>
-                    {!isRead(announcement) && userRole === 'investor' && (
-                      <Badge variant="secondary" className="text-xs">
-                        New
-                      </Badge>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {!isRead(announcement) && userRole === 'investor' && (
+                        <Badge variant="secondary" className="text-xs">
+                          New
+                        </Badge>
+                      )}
+                      {userRole === 'developer' && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteAnnouncement(announcement.id)}
+                          className="text-destructive hover:text-destructive h-auto p-1"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                   
                   <p className="text-sm text-muted-foreground mb-3 leading-relaxed">

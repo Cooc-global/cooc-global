@@ -36,6 +36,7 @@ const Dashboard = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [wallet, setWallet] = useState<WalletData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshAnnouncements, setRefreshAnnouncements] = useState(0);
 
   useEffect(() => {
     if (user) {
@@ -93,6 +94,10 @@ const Dashboard = () => {
     }
   };
 
+  const handleAnnouncementSent = () => {
+    setRefreshAnnouncements(prev => prev + 1);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -145,7 +150,10 @@ const Dashboard = () => {
               </div>
               <div className="flex items-center space-x-2">
                 {profile?.role === 'developer' && (
-                  <AnnouncementDialog userRole={profile?.role} />
+                  <AnnouncementDialog 
+                    userRole={profile?.role} 
+                    onAnnouncementSent={handleAnnouncementSent}
+                  />
                 )}
                 <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-md font-medium">
                   {profile?.role === 'developer' ? 'Developer' : 'Investor'}
@@ -269,7 +277,11 @@ const Dashboard = () => {
 
           <TabsContent value="messages" className="mt-0">
             <div className="max-w-4xl mx-auto">
-              <AnnouncementsList userId={user?.id} userRole={profile?.role} />
+              <AnnouncementsList 
+                key={refreshAnnouncements}
+                userId={user?.id} 
+                userRole={profile?.role} 
+              />
             </div>
           </TabsContent>
 

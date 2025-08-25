@@ -10,9 +10,10 @@ import { MessageSquare, Send } from 'lucide-react';
 
 interface AnnouncementDialogProps {
   userRole?: string;
+  onAnnouncementSent?: () => void;
 }
 
-export const AnnouncementDialog = ({ userRole }: AnnouncementDialogProps) => {
+export const AnnouncementDialog = ({ userRole, onAnnouncementSent }: AnnouncementDialogProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
@@ -56,6 +57,9 @@ export const AnnouncementDialog = ({ userRole }: AnnouncementDialogProps) => {
       setTitle('');
       setMessage('');
       setIsOpen(false);
+      
+      // Trigger refresh of announcements list
+      onAnnouncementSent?.();
     } catch (error) {
       console.error('Error sending announcement:', error);
       toast({
