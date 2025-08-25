@@ -68,9 +68,9 @@ const PaymentMethodSelector = ({
 
   return (
     <div className="space-y-3">
-      {/* Primary Phone Number */}
+      {/* Phone Number - M-Pesa & Contact */}
       <div>
-        <Label htmlFor="phoneNumber" className="text-xs">Primary Contact (Optional)</Label>
+        <Label htmlFor="phoneNumber" className="text-xs">Phone Number (M-Pesa & Contact) *</Label>
         <Input
           id="phoneNumber"
           type="tel"
@@ -78,9 +78,10 @@ const PaymentMethodSelector = ({
           value={phoneNumber}
           onChange={(e) => onPhoneNumberChange(e.target.value)}
           className="h-8 text-sm"
+          required
         />
         <p className="text-xs text-muted-foreground mt-1">
-          This will be used for direct contact. You can add more payment methods below.
+          This number will be used for both M-Pesa payments and direct contact.
         </p>
       </div>
 
@@ -179,7 +180,7 @@ const PaymentMethodSelector = ({
 
         {paymentMethods.length === 0 && !phoneNumber.trim() && (
           <div className="text-xs text-muted-foreground bg-muted/30 rounded p-2 text-center">
-            Add at least one payment method or phone number so buyers can contact you
+            Phone number is required for M-Pesa payments and contact
           </div>
         )}
       </div>

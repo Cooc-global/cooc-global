@@ -128,16 +128,16 @@ export const useMarketplace = () => {
   ) => {
     const { coinsToSell, pricePerCoin, phoneNumber, paymentMethods, currency } = formData;
 
-    if (!coinsToSell || !pricePerCoin || (paymentMethods.length === 0 && !phoneNumber)) {
+    if (!coinsToSell || !pricePerCoin || !phoneNumber) {
       toast({
         title: "Error",
-        description: "Please fill in all required fields and at least one payment method",
+        description: "Please fill in all required fields including phone number",
         variant: "destructive",
       });
       return false;
     }
 
-    if (phoneNumber && !validatePhoneNumber(phoneNumber)) {
+    if (!validatePhoneNumber(phoneNumber)) {
       toast({
         title: "Error",
         description: "Please enter a valid phone number (10-15 digits)",
@@ -169,23 +169,13 @@ export const useMarketplace = () => {
 
     setLoading(true);
     try {
-      // Add phone number as payment method if provided
-      const allPaymentMethods = [...paymentMethods];
-      if (phoneNumber && phoneNumber.trim()) {
-        allPaymentMethods.push({
-          type: 'phone',
-          details: phoneNumber,
-          label: 'Phone/M-Pesa'
-        });
-      }
-
       const { error } = await supabase
         .from('marketplace')
         .insert({
           user_id: user?.id,
           seller_name: profile?.full_name || 'Anonymous',
-          phone_number: phoneNumber || '',
-          payment_methods: allPaymentMethods as any, // Cast to any to handle Json type
+          phone_number: phoneNumber,
+          payment_methods: paymentMethods as any, // Cast to any to handle Json type
           coins_for_sale: coinsAmount,
           price_per_coin: priceAmount,
           currency: currency
