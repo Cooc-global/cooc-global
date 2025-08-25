@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
 import { useCLCPrice } from '@/hooks/useCLCPrice';
+import { useCurrency } from '@/hooks/useCurrency';
 import { ShoppingCart, Plus, Trash2, ChevronDown, ChevronUp, Phone } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -18,6 +19,7 @@ interface MarketplacePanelProps {
 const MarketplacePanel = ({ wallet, profile }: MarketplacePanelProps) => {
   const { user } = useAuth();
   const { priceData: clcPrice } = useCLCPrice();
+  const { formatCurrency } = useCurrency();
   const { toast } = useToast();
   const {
     activeOffers,
@@ -185,8 +187,8 @@ const MarketplacePanel = ({ wallet, profile }: MarketplacePanelProps) => {
                 
                 <div className="flex justify-between text-xs">
                   <span>{activeOffers[0].coins_for_sale.toLocaleString()}</span>
-                  <span>KSH {activeOffers[0].price_per_coin}</span>
-                  <span>KSH {(activeOffers[0].coins_for_sale * activeOffers[0].price_per_coin).toLocaleString()}</span>
+                  <span>{formatCurrency(activeOffers[0].price_per_coin, activeOffers[0].currency)}</span>
+                  <span>{formatCurrency(activeOffers[0].coins_for_sale * activeOffers[0].price_per_coin, activeOffers[0].currency)}</span>
                 </div>
               </div>
               
@@ -214,11 +216,11 @@ const MarketplacePanel = ({ wallet, profile }: MarketplacePanelProps) => {
                             )}
                           </div>
                         </div>
-                        <div className="flex justify-between text-xs">
-                          <span>{offer.coins_for_sale.toLocaleString()}</span>
-                          <span>KSH {offer.price_per_coin}</span>
-                          <span>KSH {(offer.coins_for_sale * offer.price_per_coin).toLocaleString()}</span>
-                        </div>
+                         <div className="flex justify-between text-xs">
+                           <span>{offer.coins_for_sale.toLocaleString()}</span>
+                           <span>{formatCurrency(offer.price_per_coin, offer.currency)}</span>
+                           <span>{formatCurrency(offer.coins_for_sale * offer.price_per_coin, offer.currency)}</span>
+                         </div>
                       </div>
                     ))}
                   </CollapsibleContent>
@@ -247,7 +249,7 @@ const MarketplacePanel = ({ wallet, profile }: MarketplacePanelProps) => {
               <div className="flex justify-between">
                 <span className="truncate max-w-[60px]">{recentSales[0].seller_name}</span>
                 <span>{recentSales[0].coins_for_sale.toLocaleString()}</span>
-                <span>KSH {recentSales[0].price_per_coin}</span>
+                <span>{formatCurrency(recentSales[0].price_per_coin, recentSales[0].currency)}</span>
               </div>
             </div>
           </div>

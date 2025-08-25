@@ -82,6 +82,7 @@ export const useMarketplace = () => {
         // Convert payment_methods from Json to PaymentMethod[]
         const processedOffers = (data || []).map(offer => ({
           ...offer,
+          currency: offer.currency || 'KSH',
           payment_methods: Array.isArray(offer.payment_methods) ? (offer.payment_methods as unknown) as PaymentMethod[] : []
         }));
         setOffers(processedOffers);
@@ -102,7 +103,7 @@ export const useMarketplace = () => {
           ...(activeData || []).map(offer => ({ 
             ...offer, 
             phone_number: '', 
-            currency: offer.currency || 'KSH',
+            currency: (offer as any).currency || 'KSH',
             payment_methods: Array.isArray(offer.payment_methods) ? (offer.payment_methods as unknown) as PaymentMethod[] : []
           })),
           ...(soldData || []).map(offer => ({ 

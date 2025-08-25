@@ -13,6 +13,7 @@ import DeveloperPanel from '@/components/DeveloperPanel';
 import ReferralSection from '@/components/ReferralSection';
 import PriceTicker from '@/components/PriceTicker';
 import MarketplacePanel from '@/components/MarketplacePanel';
+import CurrencyConverter from '@/components/CurrencyConverter';
 
 interface Profile {
   full_name: string;
@@ -228,8 +229,9 @@ const Dashboard = () => {
               <div className="xl:col-span-3">
                 <WalletSection wallet={wallet} profile={profile} onWalletUpdate={fetchUserData} />
               </div>
-              <div className="xl:col-span-1">
+              <div className="xl:col-span-1 space-y-4">
                 <MarketplacePanel wallet={wallet} profile={profile} />
+                <CurrencyConverter />
               </div>
             </div>
           </TabsContent>

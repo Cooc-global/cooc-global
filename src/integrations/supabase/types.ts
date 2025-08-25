@@ -368,6 +368,7 @@ export type Database = {
         Returns: {
           coins_for_sale: number
           created_at: string
+          currency: string
           description: string
           id: string
           payment_methods: Json
