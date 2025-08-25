@@ -7,7 +7,6 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Send } from 'lucide-react';
-import MarketplaceSection from './MarketplaceSection';
 
 interface WalletSectionProps {
   wallet: { balance: number; locked_balance: number } | null;
@@ -96,15 +95,9 @@ const WalletSection = ({ wallet, profile, onWalletUpdate }: WalletSectionProps) 
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {/* Marketplace */}
-      <div className="md:col-span-2">
-        <MarketplaceSection wallet={wallet} profile={profile} />
-      </div>
-
+    <div className="space-y-6">
       {/* Transfer CLC */}
-      <div className="md:col-span-2">
-        <Card>
+      <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
               <Send className="w-5 h-5 mr-2" />
@@ -150,7 +143,6 @@ const WalletSection = ({ wallet, profile, onWalletUpdate }: WalletSectionProps) 
             </form>
           </CardContent>
         </Card>
-      </div>
     </div>
   );
 };
