@@ -239,11 +239,11 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
                    {/* Payment Methods Display */}
                   {user && (
                     <div className="space-y-1 mb-2">
-                      {/* Phone Number - M-Pesa & Contact */}
+                      {/* Contact Phone Number */}
                       {offer.phone_number && (
                         <div className="flex items-center text-xs text-muted-foreground">
                           <Phone className="w-3 h-3 mr-1" />
-                          <span className="font-medium mr-1">M-Pesa/Contact:</span>
+                          <span className="font-medium mr-1">Contact:</span>
                           {displayPhoneNumber(offer)}
                         </div>
                       )}

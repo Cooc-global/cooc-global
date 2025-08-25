@@ -16,7 +16,7 @@ interface PaymentMethodSelectorProps {
 }
 
 const PAYMENT_TYPES = [
-  { value: 'phone', label: 'Phone/M-Pesa', icon: Phone, placeholder: '+254 XXX XXX XXX' },
+  { value: 'phone', label: 'Phone', icon: Phone, placeholder: '+254 XXX XXX XXX' },
   { value: 'mobile_money', label: 'Mobile Money', icon: Smartphone, placeholder: 'Service: Number' },
   { value: 'bank', label: 'Bank Transfer', icon: Building2, placeholder: 'Bank: Account Number' },
   { value: 'paypal', label: 'PayPal', icon: CreditCard, placeholder: 'PayPal email address' },
@@ -68,9 +68,9 @@ const PaymentMethodSelector = ({
 
   return (
     <div className="space-y-3">
-      {/* Phone Number - M-Pesa & Contact */}
+      {/* Contact Phone Number */}
       <div>
-        <Label htmlFor="phoneNumber" className="text-xs">Phone Number (M-Pesa & Contact) *</Label>
+        <Label htmlFor="phoneNumber" className="text-xs">Contact Phone Number *</Label>
         <Input
           id="phoneNumber"
           type="tel"
@@ -81,7 +81,7 @@ const PaymentMethodSelector = ({
           required
         />
         <p className="text-xs text-muted-foreground mt-1">
-          This number will be used for both M-Pesa payments and direct contact.
+          This number will be used for direct contact with buyers.
         </p>
       </div>
 
@@ -180,7 +180,7 @@ const PaymentMethodSelector = ({
 
         {paymentMethods.length === 0 && !phoneNumber.trim() && (
           <div className="text-xs text-muted-foreground bg-muted/30 rounded p-2 text-center">
-            Phone number is required for M-Pesa payments and contact
+            Phone number is required for buyer contact
           </div>
         )}
       </div>

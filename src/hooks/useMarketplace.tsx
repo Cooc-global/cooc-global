@@ -131,7 +131,7 @@ export const useMarketplace = () => {
     if (!coinsToSell || !pricePerCoin || !phoneNumber) {
       toast({
         title: "Error",
-        description: "Please fill in all required fields including phone number",
+        description: "Please fill in all required fields including contact phone number",
         variant: "destructive",
       });
       return false;
