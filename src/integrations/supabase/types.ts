@@ -311,6 +311,10 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: boolean
       }
+      get_current_clc_price: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       get_developer_user_id: {
         Args: Record<PropertyKey, never>
         Returns: string
