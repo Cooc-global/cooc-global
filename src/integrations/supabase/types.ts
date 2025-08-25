@@ -329,6 +329,7 @@ export type Database = {
           created_at: string
           description: string
           id: string
+          payment_methods: Json
           price_per_coin: number
           seller_name: string
           status: string

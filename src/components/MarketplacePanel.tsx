@@ -52,7 +52,8 @@ const MarketplacePanel = ({ wallet, profile }: MarketplacePanelProps) => {
     const formData: MarketplaceFormData = {
       coinsToSell,
       pricePerCoin,
-      phoneNumber
+      phoneNumber,
+      paymentMethods: []
     };
 
     const success = await createOffer(formData, profile, wallet?.balance || 0);

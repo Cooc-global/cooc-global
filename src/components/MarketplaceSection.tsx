@@ -5,10 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { useCLCPrice } from '@/hooks/useCLCPrice';
-import { ShoppingCart, Phone, Plus, Trash2 } from 'lucide-react';
+import { ShoppingCart, Phone, Plus, Trash2, CreditCard, Building2, Wallet, Smartphone } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { useMarketplace, MarketplaceFormData } from '@/hooks/useMarketplace';
+import { useMarketplace, MarketplaceFormData, PaymentMethod } from '@/hooks/useMarketplace';
 import { useToast } from '@/hooks/use-toast';
+import PaymentMethodSelector from './PaymentMethodSelector';
 
 interface MarketplaceSectionProps {
   wallet: { balance: number; locked_balance: number } | null;
@@ -35,6 +36,7 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
   const [coinsToSell, setCoinsToSell] = useState('');
   const [pricePerCoin, setPricePerCoin] = useState(clcPrice.price.toString());
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
 
 
   const handleCreateOffer = async (e: React.FormEvent) => {
@@ -53,7 +55,8 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
     const formData: MarketplaceFormData = {
       coinsToSell,
       pricePerCoin,
-      phoneNumber
+      phoneNumber,
+      paymentMethods
     };
 
     const success = await createOffer(formData, profile, wallet?.balance || 0);
@@ -63,7 +66,20 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
       setCoinsToSell('');
       setPricePerCoin(clcPrice.price.toString());
       setPhoneNumber('');
+      setPaymentMethods([]);
       setShowForm(false);
+    }
+  };
+
+  // Helper function to get payment method icon
+  const getPaymentMethodIcon = (type: PaymentMethod['type']) => {
+    switch (type) {
+      case 'phone': return <Phone className="w-3 h-3" />;
+      case 'mobile_money': return <Smartphone className="w-3 h-3" />;
+      case 'bank': return <Building2 className="w-3 h-3" />;
+      case 'paypal': return <CreditCard className="w-3 h-3" />;
+      case 'crypto': return <Wallet className="w-3 h-3" />;
+      default: return <CreditCard className="w-3 h-3" />;
     }
   };
 
@@ -95,7 +111,7 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
         
         {showForm && (
           <CardContent className="pt-0">
-            <form onSubmit={handleCreateOffer} className="space-y-3">
+            <form onSubmit={handleCreateOffer} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label htmlFor="coinsToSell" className="text-xs">Coins to Sell</Label>
@@ -130,18 +146,12 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="phoneNumber" className="text-xs">Phone Number</Label>
-                <Input
-                  id="phoneNumber"
-                  type="tel"
-                  placeholder="+254 XXX XXX XXX"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  className="h-8 text-sm"
-                  required
-                />
-              </div>
+              <PaymentMethodSelector
+                paymentMethods={paymentMethods}
+                onPaymentMethodsChange={setPaymentMethods}
+                phoneNumber={phoneNumber}
+                onPhoneNumberChange={setPhoneNumber}
+              />
 
               <div className="flex items-center justify-between">
                 <div className="text-xs text-muted-foreground">
@@ -177,39 +187,59 @@ const MarketplaceSection = ({ wallet, profile }: MarketplaceSectionProps) => {
             <div className="space-y-2 max-h-96 overflow-y-auto">
               {[...offers].sort((a, b) => a.status === 'active' ? -1 : b.status === 'active' ? 1 : 0).map((offer) => (
                 <div key={offer.id} className="border rounded p-3 space-y-2">
-                   <div className="flex justify-between items-center">
-                     <div className="flex items-center gap-2">
-                       <span className="text-sm font-medium">{offer.seller_name}</span>
-                       <Badge 
-                         variant={offer.status === 'sold' ? 'destructive' : 'default'}
-                         className={`text-xs px-1.5 py-0 h-4 ${offer.status === 'sold' ? 'bg-red-500' : 'bg-green-500 text-white'}`}
-                       >
-                         {offer.status === 'sold' ? 'SOLD' : 'LIVE'}
-                       </Badge>
-                     </div>
-                     {offer.user_id === user?.id && offer.status === 'active' && (
-                       <Button
-                         variant="ghost"
-                         size="sm"
-                         onClick={() => handleDeleteOffer(offer.id)}
-                         className="h-6 w-6 p-0 text-destructive"
-                       >
-                         <Trash2 className="w-3 h-3" />
-                       </Button>
-                     )}
-                   </div>
-                   
-                   {user && offer.phone_number && (
-                     <div className="flex items-center text-xs text-muted-foreground">
-                       <Phone className="w-3 h-3 mr-1" />
-                       {displayPhoneNumber(offer)}
-                     </div>
-                   )}
-                   {!user && (
-                     <div className="text-xs text-muted-foreground">
-                       Sign in to view contact details
-                     </div>
-                   )}
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">{offer.seller_name}</span>
+                      <Badge 
+                        variant={offer.status === 'sold' ? 'destructive' : 'default'}
+                        className={`text-xs px-1.5 py-0 h-4 ${offer.status === 'sold' ? 'bg-red-500' : 'bg-green-500 text-white'}`}
+                      >
+                        {offer.status === 'sold' ? 'SOLD' : 'LIVE'}
+                      </Badge>
+                    </div>
+                    {offer.user_id === user?.id && offer.status === 'active' && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteOffer(offer.id)}
+                        className="h-6 w-6 p-0 text-destructive"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    )}
+                  </div>
+                  
+                  {/* Payment Methods Display */}
+                  {user && (
+                    <div className="space-y-1 mb-2">
+                      {/* Phone Number */}
+                      {offer.phone_number && (
+                        <div className="flex items-center text-xs text-muted-foreground">
+                          <Phone className="w-3 h-3 mr-1" />
+                          {displayPhoneNumber(offer)}
+                        </div>
+                      )}
+                      
+                      {/* Additional Payment Methods */}
+                      {offer.payment_methods && offer.payment_methods.length > 0 && (
+                        <div className="space-y-1">
+                          {offer.payment_methods.map((method, index) => (
+                            <div key={index} className="flex items-center text-xs text-muted-foreground">
+                              {getPaymentMethodIcon(method.type)}
+                              <span className="ml-1">{method.label}:</span>
+                              <span className="ml-1 font-mono truncate">{method.details}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {!user && (
+                    <div className="text-xs text-muted-foreground mb-2">
+                      Sign in to view contact details and payment methods
+                    </div>
+                  )}
                   
                   <div className="grid grid-cols-3 gap-2 text-xs">
                     <div>
