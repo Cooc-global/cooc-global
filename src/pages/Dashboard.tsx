@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Coins, TrendingUp, Wallet, History, LogOut, Settings, Users, ShoppingCart, MessageSquare } from 'lucide-react';
+import clcLogo from '@/assets/clc-coin-logo.png';
 import WalletSection from '@/components/WalletSection';
 import InvestmentSection from '@/components/InvestmentSection';
 import TransactionHistory from '@/components/TransactionHistory';
@@ -138,7 +139,7 @@ const Dashboard = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <Coins className="w-12 h-12 text-primary mx-auto mb-4 animate-spin" />
+          <img src={clcLogo} alt="CLC Coin" className="w-12 h-12 mx-auto mb-4 animate-spin" />
           <p className="text-muted-foreground">Loading your dashboard...</p>
         </div>
       </div>
@@ -154,7 +155,7 @@ const Dashboard = () => {
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-3">
                 <div className="bg-gradient-to-br from-primary to-primary/80 rounded-lg p-2">
-                  <Coins className="w-5 h-5 text-primary-foreground" />
+                  <img src={clcLogo} alt="CLC Coin" className="w-5 h-5" />
                 </div>
                 <div>
                   <h1 className="text-lg font-bold">Cooc Global</h1>

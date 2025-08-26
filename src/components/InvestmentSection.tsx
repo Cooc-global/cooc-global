@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { TrendingUp, Calendar, DollarSign, Percent } from 'lucide-react';
+import clcLogo from '@/assets/clc-coin-logo.png';
 
 interface Investment {
   id: string;
@@ -143,7 +144,7 @@ const InvestmentSection = ({ wallet, onInvestmentUpdate }: InvestmentSectionProp
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
-            <TrendingUp className="w-5 h-5 mr-2" />
+            <img src={clcLogo} alt="CLC Coin" className="w-5 h-5 mr-2" />
             Create Investment
           </CardTitle>
           <CardDescription>
@@ -186,7 +187,7 @@ const InvestmentSection = ({ wallet, onInvestmentUpdate }: InvestmentSectionProp
               </div>
             )}
             <Button type="submit" className="w-full" disabled={loading}>
-              <TrendingUp className="w-4 h-4 mr-2" />
+              <img src={clcLogo} alt="CLC Coin" className="w-4 h-4 mr-2" />
               {loading ? 'Creating Investment...' : 'Invest CLC'}
             </Button>
           </form>

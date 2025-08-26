@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Send } from 'lucide-react';
+import clcLogo from '@/assets/clc-coin-logo.png';
 
 interface WalletSectionProps {
   wallet: { balance: number; locked_balance: number } | null;
@@ -100,7 +101,7 @@ const WalletSection = ({ wallet, profile, onWalletUpdate }: WalletSectionProps) 
       <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
-              <Send className="w-5 h-5 mr-2" />
+              <img src={clcLogo} alt="CLC Coin" className="w-5 h-5 mr-2" />
               Transfer CLC
             </CardTitle>
             <CardDescription>
