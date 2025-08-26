@@ -55,6 +55,12 @@ const Dashboard = () => {
 
       if (profileError) {
         console.error('Profile error:', profileError);
+        // Check if it's an auth error
+        if (profileError.message?.includes('JWT') || profileError.code === 'PGRST301') {
+          console.log('Auth session invalid, signing out...');
+          await handleSignOut();
+          return;
+        }
       } else {
         setProfile(profileData);
       }
@@ -68,11 +74,25 @@ const Dashboard = () => {
 
       if (walletError) {
         console.error('Wallet error:', walletError);
+        // Check if it's an auth error
+        if (walletError.message?.includes('JWT') || walletError.code === 'PGRST301') {
+          console.log('Auth session invalid, signing out...');
+          await handleSignOut();
+          return;
+        }
       } else {
         setWallet(walletData);
       }
     } catch (error) {
       console.error('Error fetching user data:', error);
+      
+      // Check if it's an auth-related error
+      if (error instanceof Error && (error.message.includes('JWT') || error.message.includes('session'))) {
+        console.log('Auth session invalid, signing out...');
+        await handleSignOut();
+        return;
+      }
+      
       toast({
         title: "Error",
         description: "Failed to load user data",
@@ -84,13 +104,29 @@ const Dashboard = () => {
   };
 
   const handleSignOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+    try {
+      // Clear local state first
+      setProfile(null);
+      setWallet(null);
+      setLoading(true);
+      
+      // Attempt to sign out, but don't fail if session is already invalid
+      const { error } = await supabase.auth.signOut();
+      if (error && !error.message.includes('session_not_found')) {
+        console.error('Sign out error:', error);
+        toast({
+          title: "Warning",
+          description: "Session cleared locally. Please refresh if issues persist.",
+          variant: "destructive",
+        });
+      }
+      
+      // Force page reload to clear any stale state
+      window.location.href = '/auth';
+    } catch (error) {
+      console.error('Sign out failed:', error);
+      // Force redirect even if sign out fails
+      window.location.href = '/auth';
     }
   };
 
