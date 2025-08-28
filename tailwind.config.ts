@@ -68,11 +68,11 @@ export default {
 					DEFAULT: 'hsl(var(--gold))',
 					foreground: 'hsl(var(--gold-foreground))'
 				},
-				crypto: {
-					blue: 'hsl(var(--crypto-blue))',
-					purple: 'hsl(var(--crypto-purple))',
-					gold: 'hsl(var(--crypto-gold))',
-					green: 'hsl(var(--crypto-green))'
+				bitcoin: {
+					orange: 'hsl(var(--bitcoin-orange))',
+					gold: 'hsl(var(--bitcoin-gold))',
+					dark: 'hsl(var(--bitcoin-dark))',
+					light: 'hsl(var(--bitcoin-light))'
 				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
@@ -93,13 +93,17 @@ export default {
 			backgroundImage: {
 				'gradient-primary': 'var(--gradient-primary)',
 				'gradient-gold': 'var(--gradient-gold)',
-				'gradient-crypto': 'var(--gradient-crypto)'
+				'gradient-crypto': 'var(--gradient-crypto)',
+				'gradient-bitcoin': 'var(--gradient-bitcoin)',
+				'gradient-bitcoin-inner': 'var(--gradient-bitcoin-inner)'
 			},
 			boxShadow: {
 				'glow': 'var(--shadow-glow)',
 				'gold-glow': 'var(--shadow-gold-glow)',
 				'coin': 'var(--shadow-coin)',
-				'coin-premium': 'var(--shadow-coin-premium)'
+				'coin-premium': 'var(--shadow-coin-premium)',
+				'bitcoin': 'var(--shadow-bitcoin)',
+				'bitcoin-inner': 'var(--shadow-bitcoin-inner)'
 			},
 			fontFamily: {
 				'crypto': ['Inter', 'system-ui', 'sans-serif'],

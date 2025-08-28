@@ -50,6 +50,12 @@ All colors MUST be HSL.
     --gold: 45 100% 60%;
     --gold-foreground: 0 0% 9%;
     
+    /* Bitcoin-inspired colors */
+    --bitcoin-orange: 25 95% 53%;
+    --bitcoin-gold: 35 100% 50%;
+    --bitcoin-dark: 30 100% 35%;
+    --bitcoin-light: 45 100% 65%;
+    
     /* Crypto theme colors */
     --crypto-blue: 210 100% 60%;
     --crypto-purple: 260 100% 65%;
@@ -60,12 +66,16 @@ All colors MUST be HSL.
     --gradient-primary: linear-gradient(135deg, hsl(260 100% 65%), hsl(285 100% 70%));
     --gradient-gold: linear-gradient(135deg, hsl(45 100% 60%), hsl(35 100% 55%));
     --gradient-crypto: linear-gradient(135deg, hsl(210 100% 60%), hsl(260 100% 65%), hsl(285 100% 70%));
+    --gradient-bitcoin: linear-gradient(135deg, hsl(25 95% 53%), hsl(35 100% 50%), hsl(45 100% 65%));
+    --gradient-bitcoin-inner: linear-gradient(45deg, hsl(35 100% 50%), hsl(25 95% 53%));
     
     /* Shadows */
     --shadow-glow: 0 0 40px hsl(260 100% 65% / 0.3);
     --shadow-gold-glow: 0 0 40px hsl(45 100% 60% / 0.4);
     --shadow-coin: 0 4px 20px hsl(260 100% 65% / 0.2);
     --shadow-coin-premium: 0 4px 25px hsl(45 100% 60% / 0.3);
+    --shadow-bitcoin: 0 8px 32px hsl(25 95% 53% / 0.4);
+    --shadow-bitcoin-inner: inset 0 2px 4px hsl(30 100% 35% / 0.3);
 
     --sidebar-background: 240 10% 3.9%;
     --sidebar-foreground: 240 5% 64.9%;
@@ -106,22 +116,26 @@ All colors MUST be HSL.
     --input: 214.3 31.8% 91.4%;
     --ring: 260 100% 65%;
     
-    /* Crypto theme colors */
-    --crypto-blue: 210 100% 60%;
-    --crypto-purple: 260 100% 65%;
-    --crypto-gold: 45 100% 60%;
-    --crypto-green: 120 60% 50%;
+    /* Bitcoin-inspired colors */
+    --bitcoin-orange: 25 95% 53%;
+    --bitcoin-gold: 35 100% 50%;
+    --bitcoin-dark: 30 100% 35%;
+    --bitcoin-light: 45 100% 65%;
     
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(260 100% 65%), hsl(285 100% 70%));
     --gradient-gold: linear-gradient(135deg, hsl(45 100% 60%), hsl(35 100% 55%));
     --gradient-crypto: linear-gradient(135deg, hsl(210 100% 60%), hsl(260 100% 65%), hsl(285 100% 70%));
+    --gradient-bitcoin: linear-gradient(135deg, hsl(25 95% 53%), hsl(35 100% 50%), hsl(45 100% 65%));
+    --gradient-bitcoin-inner: linear-gradient(45deg, hsl(35 100% 50%), hsl(25 95% 53%));
     
     /* Shadows */
     --shadow-glow: 0 0 40px hsl(260 100% 65% / 0.2);
     --shadow-gold-glow: 0 0 40px hsl(45 100% 60% / 0.3);
     --shadow-coin: 0 4px 20px hsl(260 100% 65% / 0.15);
     --shadow-coin-premium: 0 4px 25px hsl(45 100% 60% / 0.25);
+    --shadow-bitcoin: 0 8px 32px hsl(25 95% 53% / 0.3);
+    --shadow-bitcoin-inner: inset 0 2px 4px hsl(30 100% 35% / 0.25);
     
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 215.4 16.3% 46.9%;
