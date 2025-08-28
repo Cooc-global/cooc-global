@@ -97,7 +97,9 @@ export default {
 			},
 			boxShadow: {
 				'glow': 'var(--shadow-glow)',
-				'gold-glow': 'var(--shadow-gold-glow)'
+				'gold-glow': 'var(--shadow-gold-glow)',
+				'coin': 'var(--shadow-coin)',
+				'coin-premium': 'var(--shadow-coin-premium)'
 			},
 			fontFamily: {
 				'crypto': ['Inter', 'system-ui', 'sans-serif'],

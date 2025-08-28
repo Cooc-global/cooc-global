@@ -64,6 +64,8 @@ All colors MUST be HSL.
     /* Shadows */
     --shadow-glow: 0 0 40px hsl(260 100% 65% / 0.3);
     --shadow-gold-glow: 0 0 40px hsl(45 100% 60% / 0.4);
+    --shadow-coin: 0 4px 20px hsl(260 100% 65% / 0.2);
+    --shadow-coin-premium: 0 4px 25px hsl(45 100% 60% / 0.3);
 
     --sidebar-background: 240 10% 3.9%;
     --sidebar-foreground: 240 5% 64.9%;
@@ -118,6 +120,8 @@ All colors MUST be HSL.
     /* Shadows */
     --shadow-glow: 0 0 40px hsl(260 100% 65% / 0.2);
     --shadow-gold-glow: 0 0 40px hsl(45 100% 60% / 0.3);
+    --shadow-coin: 0 4px 20px hsl(260 100% 65% / 0.15);
+    --shadow-coin-premium: 0 4px 25px hsl(45 100% 60% / 0.25);
     
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 215.4 16.3% 46.9%;

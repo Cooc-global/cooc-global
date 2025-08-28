@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { useCLCPrice } from '@/hooks/useCLCPrice';
+import { CLCCoin } from '@/components/ui/clc-coin';
 import clcLogo from '@/assets/clc-coin-logo.png';
 
 interface TickerData {
@@ -73,9 +74,9 @@ const PriceTicker = () => {
       <CardContent className="p-4">
         <div className="flex flex-wrap gap-4 items-center justify-between">
           {tickerData.map((item, index) => (
-            <div key={item.symbol} className={`flex items-center space-x-2 ${index > 0 ? 'hidden sm:flex' : ''}`}>
+            <div key={item.symbol} className={`flex items-center space-x-3 ${index > 0 ? 'hidden sm:flex' : ''}`}>
               {item.symbol === 'CLC' && (
-                <img src={clcLogo} alt="CLC Coin" className="w-5 h-5" />
+                <CLCCoin size="sm" variant="glow" />
               )}
               <div className="text-sm font-medium text-foreground">
                 {item.symbol}
